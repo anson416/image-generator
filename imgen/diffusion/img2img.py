@@ -10,7 +10,7 @@ from .base import StableDiffusion_
 from .model import SDModel
 
 
-class SDText2Image(StableDiffusion_):
+class SDImage2Image(StableDiffusion_):
     def __init__(
         self,
         model: SDModel,
@@ -52,3 +52,7 @@ class SDText2Image(StableDiffusion_):
             **kwargs,
         ).images
         return results
+    
+    @classmethod
+    def from_video(cls, video_path: str):
+        cls.__call__()

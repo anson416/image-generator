@@ -36,7 +36,6 @@ class StableDiffusion_(object):
         self._pipe = pipeline.from_pretrained(
             model.path,
             torch_dtype=self._torch_dtype,
-            use_safetensors=True,
             cache_dir=model_dir,
         )
         if check_nsfw:
@@ -51,8 +50,13 @@ class StableDiffusion_(object):
                 cache_dir=model_dir,
             )
         if self._device != "cpu":
+            if torch.__version__ >= "2.0":
+                self._pipe.unet = torch.compile(self._pipe.unet, mode="reduce-overhead", fullgraph=True)
             self._pipe = self._pipe.to(self._device)
-            self._pipe.enable_xformers_memory_efficient_attention()
+            self._pipe.enable_vae_slicing()
+            self._pipe.enable_vae_tiling()
+            if torch.__version__ < "2.0":
+                self._pipe.enable_xformers_memory_efficient_attention()
 
     def __call__(self) -> List[Image]:
         results = self.pipe(...)
