@@ -8,7 +8,7 @@ import torch
 from diffusers import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
 from PIL.Image import Image
-from transformers import CLIPFeatureExtractor
+from transformers import CLIPImageProcessor
 
 from .. import DEVICE
 from .model import SDModel
@@ -44,7 +44,7 @@ class StableDiffusion_(object):
                 torch_dtype=self._torch_dtype,
                 cache_dir=model_dir,
             )
-            self._pipe.feature_extractor = CLIPFeatureExtractor.from_pretrained(
+            self._pipe.feature_extractor = CLIPImageProcessor.from_pretrained(
                 "openai/clip-vit-base-patch32",
                 torch_dtype=self._torch_dtype,
                 cache_dir=model_dir,
@@ -53,8 +53,8 @@ class StableDiffusion_(object):
             if torch.__version__ >= "2.0":
                 self._pipe.unet = torch.compile(self._pipe.unet, mode="reduce-overhead", fullgraph=True)
             self._pipe = self._pipe.to(self._device)
-            self._pipe.enable_vae_slicing()
-            self._pipe.enable_vae_tiling()
+            # self._pipe.enable_vae_slicing()
+            # self._pipe.enable_vae_tiling()
             if torch.__version__ < "2.0":
                 self._pipe.enable_xformers_memory_efficient_attention()
 
