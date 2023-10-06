@@ -1,4 +1,6 @@
 accelerate
 diffusers
+invisible_watermark
+safetensors
 transformers
 xformers

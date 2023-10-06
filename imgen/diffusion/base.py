@@ -43,13 +43,11 @@ class StableDiffusion_(object):
             self._pipe.safety_checker = StableDiffusionSafetyChecker.from_pretrained(
                 "CompVis/stable-diffusion-safety-checker",
                 torch_dtype=self._torch_dtype,
-                use_safetensors=True,
                 cache_dir=model_dir,
             )
             self._pipe.feature_extractor = CLIPFeatureExtractor.from_pretrained(
                 "openai/clip-vit-base-patch32",
                 torch_dtype=self._torch_dtype,
-                use_safetensors=True,
                 cache_dir=model_dir,
             )
         if self._device != "cpu":
