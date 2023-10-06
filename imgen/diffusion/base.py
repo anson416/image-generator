@@ -32,20 +32,24 @@ class StableDiffusion_(object):
         self._positive_preset = positive_preset if positive_preset else self.POSITIVE_PRESET
         self._negative_preset = negative_preset if negative_preset else self.NEGATIVE_PRESET
         self._device = device if device else DEVICE
+        self._torch_dtype = torch.float16 if self._device != "cpu" else torch.float32
         self._pipe = pipeline.from_pretrained(
             model.path,
-            torch_dtype=torch.float16,
+            torch_dtype=self._torch_dtype,
+            use_safetensors=True,
             cache_dir=model_dir,
         )
         if check_nsfw:
             self._pipe.safety_checker = StableDiffusionSafetyChecker.from_pretrained(
                 "CompVis/stable-diffusion-safety-checker",
-                torch_dtype=torch.float16,
+                torch_dtype=self._torch_dtype,
+                use_safetensors=True,
                 cache_dir=model_dir,
             )
             self._pipe.feature_extractor = CLIPFeatureExtractor.from_pretrained(
                 "openai/clip-vit-base-patch32",
-                torch_dtype=torch.float16,
+                torch_dtype=self._torch_dtype,
+                use_safetensors=True,
                 cache_dir=model_dir,
             )
         if self._device != "cpu":

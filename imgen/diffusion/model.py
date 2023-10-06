@@ -41,12 +41,15 @@ class SDModel(object):
     
 
 _SD_MODELS = {
-    "Anything V4.0": SDModel("Anything V4.0", "andite/anything-v4.0", "", "https://huggingface.co/xyn-ai/anything-v4.0"),
-    "Anything V4.5": SDModel("Anything V4.5", "andite/anything-v4.5", "", "https://huggingface.co/Airic/Anything-V4.5"),
+    "Anything V4.0": SDModel("Anything V4.0", "xyn-ai/anything-v4.0", "", "https://huggingface.co/xyn-ai/anything-v4.0"),
+    "Anything V4.5": SDModel("Anything V4.5", "Airic/Anything-V4.5", "", "https://huggingface.co/Airic/Anything-V4.5"),
     "Arcane Diffusion": SDModel("Arcane Diffusion", "nitrosocke/Arcane-Diffusion", "arcane style", "https://huggingface.co/nitrosocke/Arcane-Diffusion"),
     "Dreamlike Anime 1.0": SDModel("Dreamlike Anime 1.0", "dreamlike-art/dreamlike-anime-1.0", "photo anime", "https://huggingface.co/dreamlike-art/dreamlike-anime-1.0"),
     "Dreamlike Diffusion 1.0": SDModel("Dreamlike Diffusion 1.0", "dreamlike-art/dreamlike-diffusion-1.0", "dreamlikeart", "https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0"),
     "Dreamlike Photoreal 2.0": SDModel("Dreamlike Photoreal 2.0", "dreamlike-art/dreamlike-photoreal-2.0", "photo", "https://huggingface.co/dreamlike-art/dreamlike-photoreal-2.0"),
+    "Ghibli Diffusion": SDModel("Ghibli Diffusion", "nitrosocke/Ghibli-Diffusion", "ghibli style", "https://huggingface.co/nitrosocke/Ghibli-Diffusion"),
+    "Stable Diffusion V1.5": SDModel("Stable Diffusion V1.5", "runwayml/stable-diffusion-v1-5", "", "https://huggingface.co/runwayml/stable-diffusion-v1-5"),
+    "Stable Diffusion V2.0": SDModel("Stable Diffusion V2.0", "stabilityai/stable-diffusion-2", "", "https://huggingface.co/stabilityai/stable-diffusion-2"),
     "Waifu Diffusion": SDModel("Waifu Diffusion", "hakurei/waifu-diffusion", "", "https://huggingface.co/hakurei/waifu-diffusion"),
 }
 
