@@ -48,6 +48,7 @@ _SD_MODELS = {
     "Dreamlike Diffusion 1.0": SDModel("Dreamlike Diffusion 1.0", "dreamlike-art/dreamlike-diffusion-1.0", "dreamlikeart", "https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0"),
     "Dreamlike Photoreal 2.0": SDModel("Dreamlike Photoreal 2.0", "dreamlike-art/dreamlike-photoreal-2.0", "photo", "https://huggingface.co/dreamlike-art/dreamlike-photoreal-2.0"),
     "Ghibli Diffusion": SDModel("Ghibli Diffusion", "nitrosocke/Ghibli-Diffusion", "ghibli style", "https://huggingface.co/nitrosocke/Ghibli-Diffusion"),
+    "Openjourney": SDModel("Openjourney", "prompthero/openjourney", "mdjrny-v4 style", "https://huggingface.co/prompthero/openjourney"),
     "Stable Diffusion V1.5": SDModel("Stable Diffusion V1.5", "runwayml/stable-diffusion-v1-5", "", "https://huggingface.co/runwayml/stable-diffusion-v1-5"),
     "Stable Diffusion V2.0": SDModel("Stable Diffusion V2.0", "stabilityai/stable-diffusion-2", "", "https://huggingface.co/stabilityai/stable-diffusion-2"),
     "Waifu Diffusion": SDModel("Waifu Diffusion", "hakurei/waifu-diffusion", "", "https://huggingface.co/hakurei/waifu-diffusion"),

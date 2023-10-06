@@ -5,7 +5,7 @@ import random
 from typing import List, Optional
 
 import torch
-from diffusers import DiffusionPipeline
+from diffusers import DiffusionPipeline, DPMSolverMultistepScheduler
 from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
 from PIL.Image import Image
 from transformers import CLIPImageProcessor
@@ -37,9 +37,11 @@ class StableDiffusion_(object):
         self._pipe = pipeline.from_pretrained(
             model.path,
             torch_dtype=self._torch_dtype,
+            scheduler=DPMSolverMultistepScheduler.from_pretrained(model.path, subfolder="scheduler"),
             cache_dir=model_dir,
         )
         if check_nsfw:
+            self._negative_preset = self.get_final_prompt(self._negative_preset, "nude, naked")
             self._pipe.safety_checker = StableDiffusionSafetyChecker.from_pretrained(
                 "CompVis/stable-diffusion-safety-checker",
                 torch_dtype=self._torch_dtype,
@@ -71,11 +73,7 @@ class StableDiffusion_(object):
     
     @staticmethod
     def get_final_prompt(*prompts: Optional[str]) -> str:
-        output = []
-        for prompt in prompts:
-            if prompt and prompt.strip() != "":
-                output.extend([kw.strip() for kw in prompt.split(",")])
-        return ", ".join(output)
+        return ", ".join([p for prompt in prompts if prompt and (p := prompt.strip()) != ""])
     
     def get_positive_prompt(self, prompt: str) -> str:
         return self.get_final_prompt(self.model.prefix, self.positive_preset, prompt)
