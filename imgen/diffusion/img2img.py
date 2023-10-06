@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 # File: img2img.py
 
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
+import numpy as np
 from diffusers import StableDiffusionImg2ImgPipeline
-from PIL.Image import Image
+from PIL import Image
 
 from .base import StableDiffusion_
 from .model import SDModel
@@ -26,24 +27,23 @@ class SDImage2Image(StableDiffusion_):
     
     def __call__(
             self,
-            img: Image,
             prompt: str,
+            img_path: Optional[str] = None,
+            img: Optional[Union[Image.Image, np.ndarray]] = None,
             neg_prompt: Optional[str] = None,
-            width: Optional[int] = None,
-            height: Optional[int] = None,
             n_images: int = 1,
             n_steps: int = 50,
             strength: float = 0.8,
             guidance_scale: float = 7.5,
             seed: Optional[int] = None,
             **kwargs: Any,
-        ) -> List[Image]:
+        ) -> List[Image.Image]:
+        assert img_path or img, "img_path and img cannot be both None"
+
         results = self.pipe(
-            image=img,
+            image=Image.open(img_path).convert("RGB") if img_path else img,
             prompt=self.get_positive_prompt(prompt),
             negative_prompt=self.get_negative_prompt(neg_prompt),
-            width=width,
-            height=height,
             num_images_per_prompt=n_images,
             num_inference_steps=n_steps,
             strength=strength,
@@ -52,7 +52,3 @@ class SDImage2Image(StableDiffusion_):
             **kwargs,
         ).images
         return results
-    
-    @classmethod
-    def from_video(cls, video_path: str):
-        cls.__call__()
