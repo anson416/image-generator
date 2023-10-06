@@ -7,6 +7,6 @@ Image generation tool.
 
 import torch
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"

@@ -26,16 +26,22 @@ class SDText2Image(StableDiffusion_):
     def __call__(
             self,
             prompt: str,
+            neg_prompt: Optional[str] = None,
+            width: Optional[int] = None,
+            height: Optional[int] = None,
+            n_images: int = 1,
+            n_steps: int = 50,
+            guidance_scale: float = 7.5,
             seed: Optional[int] = None,
         ) -> List[Image]:
         results = self.pipe(
-            prompt=prompt,
-            negative_prompt="nude",
-            width=None,
-            height=None,
-            num_images_per_prompt=1,
-            num_inference_steps=50,
-            guidance_scale=7.5,
+            prompt=self.get_positive_prompt(prompt),
+            negative_prompt=self.get_negative_prompt(neg_prompt),
+            width=width,
+            height=height,
+            num_images_per_prompt=n_images,
+            num_inference_steps=n_steps,
+            guidance_scale=guidance_scale,
             generator=self.get_generator(seed=seed),
-        )
+        ).images
         return results

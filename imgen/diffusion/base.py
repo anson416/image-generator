@@ -57,7 +57,22 @@ class StableDiffusion_(object):
         return SD_MODELS
     
     def get_generator(self, seed: Optional[int] = None):
-        return torch.Generator(device=self.device).manual_seed(seed if seed else random.randint(0, (1 << 31) - 1))
+        return torch.Generator(device=self.device).manual_seed(
+            seed if seed or seed == 0 else random.randint(0, (1 << 31) - 1)
+        )
+    
+    @staticmethod
+    def get_final_prompt(*prompts: Optional[str]) -> str:
+        output = []
+        for prompt in [prompt for prompt in prompts if prompt and prompt.strip() != ""]:
+            output.extend(list(map(lambda x: x.strip(), prompt.split(","))))
+        return ", ".join(output)
+    
+    def get_positive_prompt(self, prompt: str) -> str:
+        return self.get_final_prompt(self.model.prefix, self.positive_preset, prompt)
+    
+    def get_negative_prompt(self, prompt: Optional[str]) -> str:
+        return self.get_final_prompt(self.negative_preset, prompt)
     
     @property
     def model(self) -> SDModel:
