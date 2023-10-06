@@ -54,9 +54,9 @@ class StableDiffusion_(object):
             if compile and torch.__version__ >= "2.0":
                 self._pipe.unet = torch.compile(self._pipe.unet, mode="reduce-overhead", fullgraph=True)
             self._pipe = self._pipe.to(self._device)
-            self._pipe.enable_model_cpu_offload()
-            self._pipe.enable_vae_slicing()
-            self._pipe.enable_vae_tiling()
+            # self._pipe.enable_model_cpu_offload()
+            # self._pipe.enable_vae_slicing()
+            # self._pipe.enable_vae_tiling()
             if torch.__version__ < "2.0":
                 self._pipe.enable_xformers_memory_efficient_attention()
 
