@@ -49,8 +49,8 @@ class StableDiffusion_(object):
         self._pipe = self._pipeline.from_pretrained(
             self._model.path,
             torch_dtype=self._torch_dtype,
-            scheduler=scheduler.from_pretrained(self._model.path, subfolder="scheduler"),
-            cache_dir=model_dir,
+            scheduler=self._scheduler.from_pretrained(self._model.path, subfolder="scheduler"),
+            cache_dir=self._model_dir,
             **kwargs,
         )
         if self._check_nsfw:
@@ -61,12 +61,12 @@ class StableDiffusion_(object):
             self._pipe.safety_checker = StableDiffusionSafetyChecker.from_pretrained(
                 "CompVis/stable-diffusion-safety-checker",
                 torch_dtype=self._torch_dtype,
-                cache_dir=model_dir,
+                cache_dir=self._model_dir,
             )
             self._pipe.feature_extractor = CLIPImageProcessor.from_pretrained(
                 "openai/clip-vit-base-patch32",
                 torch_dtype=self._torch_dtype,
-                cache_dir=model_dir,
+                cache_dir=self._model_dir,
             )
         if self._device == "cuda":
             if self._compile_unet and torch.__version__ >= "2.0":
