@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # File: model.py
 
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 
 class SDModel(object):
@@ -18,10 +18,10 @@ class SDModel(object):
         self._website = website
 
     def __repr__(self) -> str:
-        return f"SDModel({self.name}, {self.website})"
+        return f"SDModel({self.name}, {self.path}, {self.website})"
     
     def __str__(self) -> str:
-        return f"SDModel({self.name}, {self.website})"
+        return f"SDModel({self.name}, {self.path}, {self.website})"
 
     @property
     def name(self) -> str:
@@ -56,11 +56,15 @@ _SD_MODELS = {
 }
 
 
+def get_sd_models() -> Dict[str, SDModel]:
+    return _SD_MODELS
+
+
 def get_sd_model_names() -> Tuple[str]:
     return tuple(_SD_MODELS.keys())
 
 
 def get_sd_model(name: str) -> SDModel:
-    if not (model := _SD_MODELS.get(name, None)):
-        raise KeyError(f"{name} not found")
-    return model
+    if not (sd_model := _SD_MODELS.get(name, None)):
+        raise KeyError(f"Model \"{name}\" not found")
+    return sd_model

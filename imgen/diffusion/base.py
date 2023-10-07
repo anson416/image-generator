@@ -2,16 +2,17 @@
 # File: base.py
 
 import random
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
+import numpy as np
 import torch
-from diffusers import DiffusionPipeline, DPMSolverMultistepScheduler
-from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
-from PIL.Image import Image
-from transformers import CLIPImageProcessor
+from diffusers import DiffusionPipeline
+from PIL import Image
+from utils.hardware import get_total_mem
 
 from .. import DEVICE
-from .model import SDModel
+from .model import SDModel, get_sd_model
+from .scheduler import SchedulerMixin, get_sd_scheduler
 
 
 class StableDiffusion_(object):
@@ -21,31 +22,42 @@ class StableDiffusion_(object):
     def __init__(
         self,
         pipeline: DiffusionPipeline,
-        model: SDModel,
+        model: Optional[SDModel] = None,
         check_nsfw: bool = False,
         positive_preset: Optional[str] = None,
         negative_preset: Optional[str] = None,
-        compile: bool = False,
+        compile_unet: bool = False,
         model_dir: Optional[str] = None,
         device: Optional[str] = None,
         gpu_id: int = 0,
-        *args: Any,
+        scheduler: Optional[SchedulerMixin] = None,
+        optimizations: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> None:
-        self._model = model
+        self._pipeline = pipeline
+        self._model = model if model else get_sd_model("Stable Diffusion V2.1")
+        self._check_nsfw = check_nsfw
         self._positive_preset = positive_preset if positive_preset else self.POSITIVE_PRESET
         self._negative_preset = negative_preset if negative_preset else self.NEGATIVE_PRESET
-        self._device = device if device else DEVICE
-        self._torch_dtype = torch.float16 if self._device != "cpu" else torch.float32
-        self._pipe = pipeline.from_pretrained(
-            model.path,
+        self._compile_unet = compile_unet
+        self._model_dir = model_dir
+        self._device = device.lower() if device else DEVICE
+        self._gpu_id = gpu_id
+        self._scheduler = scheduler if scheduler else get_sd_scheduler("UniPCMultistepScheduler")
+        self._optimizations = optimizations
+        self._torch_dtype = torch.float16 if self._device == "cuda" else torch.float32
+        self._pipe = self._pipeline.from_pretrained(
+            self._model.path,
             torch_dtype=self._torch_dtype,
-            scheduler=DPMSolverMultistepScheduler.from_pretrained(model.path, subfolder="scheduler"),
+            scheduler=scheduler.from_pretrained(self._model.path, subfolder="scheduler"),
             cache_dir=model_dir,
-            *args,
             **kwargs,
         )
-        if check_nsfw:
+        if self._check_nsfw:
+            from diffusers.pipelines.stable_diffusion import \
+                StableDiffusionSafetyChecker
+            from transformers import CLIPImageProcessor
+
             self._pipe.safety_checker = StableDiffusionSafetyChecker.from_pretrained(
                 "CompVis/stable-diffusion-safety-checker",
                 torch_dtype=self._torch_dtype,
@@ -56,16 +68,23 @@ class StableDiffusion_(object):
                 torch_dtype=self._torch_dtype,
                 cache_dir=model_dir,
             )
-        if self._device != "cpu":
-            if compile and torch.__version__ >= "2.0":
+        if self._device == "cuda":
+            if self._compile_unet and torch.__version__ >= "2.0":
                 self._pipe.unet = torch.compile(self._pipe.unet, mode="reduce-overhead", fullgraph=True)
             self._pipe.enable_model_cpu_offload(gpu_id=gpu_id)
-            # self._pipe.enable_vae_slicing()
-            # self._pipe.enable_vae_tiling()
+            if isinstance(self._optimizations, list):
+                if "enable_vae_slicing" in self._optimizations:
+                    self._pipe.enable_vae_slicing()
+                if "enable_vae_tiling" in self._optimizations:
+                    self._pipe.enable_vae_tiling()
             if torch.__version__ < "2.0":
                 self._pipe.enable_xformers_memory_efficient_attention()
+        else:
+            self._pipe.to(self._device)
+            if self._device == "mps" and get_total_mem() < 64 * (1024 ** 3):
+                self._pipe.enable_attention_slicing()
 
-    def __call__(self) -> List[Image]:
+    def __call__(self) -> List[Union[Image.Image, np.ndarray]]:
         results = self.pipe(...)
         return results
     
@@ -85,15 +104,23 @@ class StableDiffusion_(object):
         return self.get_final_prompt(self.negative_preset, prompt)
     
     @property
+    def pipeline(self) -> DiffusionPipeline:
+        return self._pipeline
+    
+    @property
     def model(self) -> SDModel:
         return self._model
+    
+    @property
+    def check_nsfw(self) -> bool:
+        return self._check_nsfw
     
     @property
     def positive_preset(self) -> str:
         return self._positive_preset
     
     @positive_preset.setter
-    def positive_preset(self, preset: str) -> None:
+    def positive_preset(self, preset: Optional[str]) -> None:
         self._positive_preset = preset
     
     @property
@@ -101,12 +128,32 @@ class StableDiffusion_(object):
         return self._negative_preset
     
     @negative_preset.setter
-    def negative_preset(self, preset: str) -> None:
+    def negative_preset(self, preset: Optional[str]) -> None:
         self._negative_preset = preset
+
+    @property
+    def compile_unet(self) -> bool:
+        return self._compile_unet
+    
+    @property
+    def model_dir(self) -> Optional[str]:
+        return self._model_dir
     
     @property
     def device(self) -> str:
         return self._device
+    
+    @property
+    def gpu_id(self) -> int:
+        return self._gpu_id
+    
+    @property
+    def scheduler(self) -> SchedulerMixin:
+        return self._scheduler
+    
+    @property
+    def optimizations(self) -> Optional[List[str]]:
+        return self._optimizations
     
     @property
     def pipe(self) -> DiffusionPipeline:
