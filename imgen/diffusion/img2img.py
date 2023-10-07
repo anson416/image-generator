@@ -11,21 +11,14 @@ from PIL import Image
 from utils.file_ops import create_dir
 
 from .base import StableDiffusion_
-from .model import SDModel
 
 
 class SDImage2Image(StableDiffusion_):
-    def __init__(
-        self,
-        model: SDModel,
-        check_nsfw: bool = False,
-        model_dir: Optional[str] = None,
-    ) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
-            StableDiffusionImg2ImgPipeline,
-            model,
-            check_nsfw=check_nsfw,
-            model_dir=model_dir,
+            pipeline=StableDiffusionImg2ImgPipeline,
+            *args,
+            **kwargs,
         )
     
     def __call__(
@@ -41,6 +34,7 @@ class SDImage2Image(StableDiffusion_):
             guidance_scale: float = 7.5,
             seed: Optional[int] = None,
             output_type: str = "pil",
+            *args: Any,
             **kwargs: Any,
         ) -> List[Image.Image]:
         assert img_path or img, "img_path and img cannot be both None"
@@ -55,6 +49,7 @@ class SDImage2Image(StableDiffusion_):
             guidance_scale=guidance_scale,
             generator=self.get_generator(seed=seed),
             output_type=output_type,
+            *args,
             **kwargs,
         ).images
 
@@ -69,7 +64,10 @@ class SDImage2Image(StableDiffusion_):
 def video2video(
     pipe: SDImage2Image,
     video_path: str,
+    output_name: Optional[str] = None
 ) -> None:
+    output_name = output_name if output_name else "output"
+
     video = cv2.VideoCapture(video_path)
     fps = video.get(cv2.cv.CV_CAP_PROP_FPS if int(cv2.__version__.split(".")[0]) < 3 else cv2.CAP_PROP_FPS)
 
@@ -78,10 +76,10 @@ def video2video(
         ret, frame = video.read()
         if not ret:
             break
-        frame = cv2.cvtColor(frame / 255, cv2.COLOR_BGR2RGB)
+        frame = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if not video_writer:
-            video_writer = cv2.VideoWriter("output.mp4", cv2.VideoWriter_fourcc(*"mp4v"), fps, frame.size)
-        video_writer.write(pipe(img=frame, output_type="np"))
+            video_writer = cv2.VideoWriter(f"{output_name}.mp4", cv2.VideoWriter_fourcc(*"mp4v"), fps, frame.size)
+        video_writer.write(np.array(pipe(img=frame)[0])[:, :, ::-1])
 
     video_writer.release()
     video.release()

@@ -7,21 +7,14 @@ from diffusers import StableDiffusionPipeline
 from PIL.Image import Image
 
 from .base import StableDiffusion_
-from .model import SDModel
 
 
 class SDText2Image(StableDiffusion_):
-    def __init__(
-        self,
-        model: SDModel,
-        check_nsfw: bool = False,
-        model_dir: Optional[str] = None,
-    ) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
-            StableDiffusionPipeline,
-            model,
-            check_nsfw=check_nsfw,
-            model_dir=model_dir,
+            pipeline=StableDiffusionPipeline,
+            *args,
+            **kwargs,
         )
 
     def __call__(
@@ -34,6 +27,7 @@ class SDText2Image(StableDiffusion_):
             n_steps: int = 50,
             guidance_scale: float = 7.5,
             seed: Optional[int] = None,
+            *args: Any,
             **kwargs: Any,
         ) -> List[Image]:
         results = self.pipe(
@@ -45,6 +39,7 @@ class SDText2Image(StableDiffusion_):
             num_inference_steps=n_steps,
             guidance_scale=guidance_scale,
             generator=self.get_generator(seed=seed),
+            *args,
             **kwargs,
         ).images
         return results

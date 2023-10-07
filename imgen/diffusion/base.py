@@ -2,7 +2,7 @@
 # File: base.py
 
 import random
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import torch
 from diffusers import DiffusionPipeline, DPMSolverMultistepScheduler
@@ -29,6 +29,8 @@ class StableDiffusion_(object):
         model_dir: Optional[str] = None,
         device: Optional[str] = None,
         gpu_id: int = 0,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         self._model = model
         self._positive_preset = positive_preset if positive_preset else self.POSITIVE_PRESET
@@ -40,9 +42,10 @@ class StableDiffusion_(object):
             torch_dtype=self._torch_dtype,
             scheduler=DPMSolverMultistepScheduler.from_pretrained(model.path, subfolder="scheduler"),
             cache_dir=model_dir,
+            *args,
+            **kwargs,
         )
         if check_nsfw:
-            self._negative_preset = self.get_final_prompt(self._negative_preset, "nude, naked")
             self._pipe.safety_checker = StableDiffusionSafetyChecker.from_pretrained(
                 "CompVis/stable-diffusion-safety-checker",
                 torch_dtype=self._torch_dtype,
@@ -89,9 +92,17 @@ class StableDiffusion_(object):
     def positive_preset(self) -> str:
         return self._positive_preset
     
+    @positive_preset.setter
+    def positive_preset(self, preset: str) -> None:
+        self._positive_preset = preset
+    
     @property
     def negative_preset(self) -> str:
         return self._negative_preset
+    
+    @negative_preset.setter
+    def negative_preset(self, preset: str) -> None:
+        self._negative_preset = preset
     
     @property
     def device(self) -> str:
