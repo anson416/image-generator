@@ -69,9 +69,10 @@ class StableDiffusion_(object):
                 cache_dir=self._model_dir,
             )
         if self._device == "cuda":
+            self._pipe.enable_model_cpu_offload(gpu_id=gpu_id)
+            self._pipe.unet.to(memory_format=torch.channels_last)
             if self._compile_unet and torch.__version__ >= "2.0":
                 self._pipe.unet = torch.compile(self._pipe.unet, mode="reduce-overhead", fullgraph=True)
-            self._pipe.enable_model_cpu_offload(gpu_id=gpu_id)
             if isinstance(self._optimizations, list):
                 if "enable_vae_slicing" in self._optimizations:
                     self._pipe.enable_vae_slicing()
@@ -80,7 +81,7 @@ class StableDiffusion_(object):
             if torch.__version__ < "2.0":
                 self._pipe.enable_xformers_memory_efficient_attention()
         else:
-            self._pipe.to(self._device)
+            self._pipe = self._pipe.to(self._device)
             if self._device == "mps" and get_total_mem() < 64 * (1024 ** 3):
                 self._pipe.enable_attention_slicing()
 

@@ -20,9 +20,9 @@ class SDImage2Image(StableDiffusion_):
     
     def __call__(
             self,
-            prompt: Optional[str] = None,
             img_path: Optional[str] = None,
             img: Optional[Union[Image.Image, np.ndarray]] = None,
+            prompt: Optional[str] = None,
             neg_prompt: Optional[str] = None,
             n_images: int = 1,
             output_dir: Optional[str] = None,
