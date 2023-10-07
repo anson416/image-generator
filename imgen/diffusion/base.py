@@ -15,8 +15,8 @@ from .model import SDModel
 
 
 class StableDiffusion_(object):
-    POSITIVE_PRESET = "masterpiece, high quality, absurdres, 4K, 8K, HQ"
-    NEGATIVE_PRESET = "simple background, duplicate, low quality, lowest quality, bad anatomy, bad proportions, extra limbs, fewer limbs, extra fingers, fewer fingers, lowres, username, artist name, error, watermark, signature, text, extra digits, fewer digits, jpeg artifacts, blurry"
+    POSITIVE_PRESET = "masterpiece, high quality, best quality, absurdres, 4K, 8K, HQ"
+    NEGATIVE_PRESET = "simple background, duplicate, low quality, lowest quality, worst quality, bad anatomy, bad proportions, extra limbs, fewer limbs, extra fingers, fewer fingers, lowres, username, artist name, error, watermark, signature, text, extra digits, fewer digits, jpeg artifacts, blurry"
     
     def __init__(
         self,
@@ -27,7 +27,8 @@ class StableDiffusion_(object):
         negative_preset: Optional[str] = None,
         compile: bool = False,
         model_dir: Optional[str] = None,
-        device: Optional[str] = None
+        device: Optional[str] = None,
+        gpu_id: int = 0,
     ) -> None:
         self._model = model
         self._positive_preset = positive_preset if positive_preset else self.POSITIVE_PRESET
@@ -55,8 +56,7 @@ class StableDiffusion_(object):
         if self._device != "cpu":
             if compile and torch.__version__ >= "2.0":
                 self._pipe.unet = torch.compile(self._pipe.unet, mode="reduce-overhead", fullgraph=True)
-            self._pipe = self._pipe.to(self._device)
-            # self._pipe.enable_model_cpu_offload()
+            self._pipe.enable_model_cpu_offload(gpu_id=gpu_id)
             # self._pipe.enable_vae_slicing()
             # self._pipe.enable_vae_tiling()
             if torch.__version__ < "2.0":

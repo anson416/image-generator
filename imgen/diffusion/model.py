@@ -51,15 +51,16 @@ _SD_MODELS = {
     "Openjourney": SDModel("Openjourney", "prompthero/openjourney", "mdjrny-v4 style", "https://huggingface.co/prompthero/openjourney"),
     "Stable Diffusion V1.5": SDModel("Stable Diffusion V1.5", "runwayml/stable-diffusion-v1-5", "", "https://huggingface.co/runwayml/stable-diffusion-v1-5"),
     "Stable Diffusion V2.0": SDModel("Stable Diffusion V2.0", "stabilityai/stable-diffusion-2", "", "https://huggingface.co/stabilityai/stable-diffusion-2"),
+    "Stable Diffusion V2.1": SDModel("Stable Diffusion V2.1", "stabilityai/stable-diffusion-2-1", "", "https://huggingface.co/stabilityai/stable-diffusion-2-1"),
     "Waifu Diffusion": SDModel("Waifu Diffusion", "hakurei/waifu-diffusion", "", "https://huggingface.co/hakurei/waifu-diffusion"),
 }
 
 
-def get_model_names() -> Tuple[str]:
+def get_sd_model_names() -> Tuple[str]:
     return tuple(_SD_MODELS.keys())
 
 
-def get_model(name: str) -> SDModel:
+def get_sd_model(name: str) -> SDModel:
     if not (model := _SD_MODELS.get(name, None)):
         raise KeyError(f"{name} not found")
     return model
