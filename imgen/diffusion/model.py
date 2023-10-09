@@ -55,6 +55,7 @@ _SD_MODELS = {
     "SD V2.0": SDModel("Stable Diffusion V2.0", "stabilityai/stable-diffusion-2", "", "https://huggingface.co/stabilityai/stable-diffusion-2"),
     "SD V2.1": SDModel("Stable Diffusion V2.1", "stabilityai/stable-diffusion-2-1", "", "https://huggingface.co/stabilityai/stable-diffusion-2-1"),
     "SD x2 Latent Upscaler": SDModel("Stable Diffusion x2 Latent Upscaler", "stabilityai/sd-x2-latent-upscaler", "", "https://huggingface.co/stabilityai/sd-x2-latent-upscaler"),
+    "SD x4 Upscaler": SDModel("Stable Diffusion x4 Upscaler", "stabilityai/stable-diffusion-x4-upscaler", "", "https://huggingface.co/stabilityai/stable-diffusion-x4-upscaler"),
     "Waifu Diffusion": SDModel("Waifu Diffusion", "hakurei/waifu-diffusion", "", "https://huggingface.co/hakurei/waifu-diffusion"),
 }
 

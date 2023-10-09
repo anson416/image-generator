@@ -12,7 +12,10 @@ from .base import StableDiffusion_
 
 class SDText2Image(StableDiffusion_):
     def __init__(self, **kwargs: Any) -> None:
-        super().__init__(StableDiffusionPipeline, **kwargs)
+        super().__init__(
+            StableDiffusionPipeline,
+            **kwargs,
+        )
 
     def __call__(
         self,

@@ -15,7 +15,10 @@ from .base import StableDiffusion_
 
 class SDImage2Image(StableDiffusion_):
     def __init__(self, **kwargs: Any) -> None:
-        super().__init__(StableDiffusionImg2ImgPipeline, **kwargs)
+        super().__init__(
+            StableDiffusionImg2ImgPipeline,
+            **kwargs,
+        )
     
     def __call__(
         self,
