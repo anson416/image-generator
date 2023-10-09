@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 # File: base.py
 
+import os
 import random
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
 
-import numpy as np
 import torch
 from diffusers import DiffusionPipeline
 from PIL import Image
+from utils.date_time import get_datetime
+from utils.file_ops import create_dir
 from utils.hardware import get_total_mem
+from utils.types import Pathlike
 
 from .. import DEVICE
 from .model import SDModel, get_sd_model
@@ -22,12 +25,13 @@ class StableDiffusion_(object):
     def __init__(
         self,
         pipeline: DiffusionPipeline,
+        *,
         model: Optional[SDModel] = None,
         check_nsfw: bool = False,
         positive_preset: Optional[str] = None,
         negative_preset: Optional[str] = None,
         compile_unet: bool = False,
-        model_dir: Optional[str] = None,
+        model_dir: Optional[Pathlike] = None,
         device: Optional[str] = None,
         gpu_id: int = 0,
         scheduler: Optional[SchedulerMixin] = None,
@@ -35,7 +39,7 @@ class StableDiffusion_(object):
         **kwargs: Any,
     ) -> None:
         self._pipeline = pipeline
-        self._model = model if model else get_sd_model("Stable Diffusion V2.1")
+        self._model = model if model else get_sd_model("SD V2.1")
         self._check_nsfw = check_nsfw
         self._positive_preset = positive_preset if positive_preset else self.POSITIVE_PRESET
         self._negative_preset = negative_preset if negative_preset else self.NEGATIVE_PRESET
@@ -85,11 +89,18 @@ class StableDiffusion_(object):
             if self._device == "mps" and get_total_mem() < 64 * (1024 ** 3):
                 self._pipe.enable_attention_slicing()
 
-    def __call__(self) -> List[Union[Image.Image, np.ndarray]]:
-        results = self.pipe(...)
+    def __call__(
+        self,
+        *,
+        output_dir: Optional[Pathlike] = None,
+        **kwargs: Any,
+    ) -> List[Image.Image]:
+        results = self.pipe(**kwargs).images
+        self.save_images(results, output_dir=output_dir)
+
         return results
     
-    def get_generator(self, seed: Optional[int] = None):
+    def get_generator(self, seed: Optional[int] = None) -> torch.Generator:
         return torch.Generator(device=self.device).manual_seed(
             seed if seed or seed == 0 else random.randint(0, (1 << 31) - 1)
         )
@@ -103,6 +114,17 @@ class StableDiffusion_(object):
     
     def get_negative_prompt(self, prompt: Optional[str]) -> str:
         return self.get_final_prompt(self.negative_preset, prompt)
+    
+    @staticmethod
+    def save_images(
+        imgs: List[Image.Image],
+        output_dir: Optional[Pathlike] = None,
+    ) -> None:
+        dt = get_datetime(r"%Y%m%d", r"%H%M%S", "")
+        if output_dir:
+            create_dir(output_dir)
+            for i, img in enumerate(imgs, start=1):
+                img.save(os.path.join(output_dir, f"output_{dt}_{i:0{str(len(imgs))}d}.png"))
     
     @property
     def pipeline(self) -> DiffusionPipeline:

@@ -3,12 +3,14 @@
 
 from typing import Dict, Optional, Tuple
 
+from utils.types import Pathlike
+
 
 class SDModel(object):
     def __init__(
         self,
         name: str,
-        path: str,
+        path: Pathlike,
         prefix: Optional[str] = None,
         website: Optional[str] = None,
     ) -> None:
@@ -49,9 +51,10 @@ _SD_MODELS = {
     "Dreamlike Photoreal 2.0": SDModel("Dreamlike Photoreal 2.0", "dreamlike-art/dreamlike-photoreal-2.0", "photo", "https://huggingface.co/dreamlike-art/dreamlike-photoreal-2.0"),
     "Ghibli Diffusion": SDModel("Ghibli Diffusion", "nitrosocke/Ghibli-Diffusion", "ghibli style", "https://huggingface.co/nitrosocke/Ghibli-Diffusion"),
     "Openjourney": SDModel("Openjourney", "prompthero/openjourney", "mdjrny-v4 style", "https://huggingface.co/prompthero/openjourney"),
-    "Stable Diffusion V1.5": SDModel("Stable Diffusion V1.5", "runwayml/stable-diffusion-v1-5", "", "https://huggingface.co/runwayml/stable-diffusion-v1-5"),
-    "Stable Diffusion V2.0": SDModel("Stable Diffusion V2.0", "stabilityai/stable-diffusion-2", "", "https://huggingface.co/stabilityai/stable-diffusion-2"),
-    "Stable Diffusion V2.1": SDModel("Stable Diffusion V2.1", "stabilityai/stable-diffusion-2-1", "", "https://huggingface.co/stabilityai/stable-diffusion-2-1"),
+    "SD V1.5": SDModel("Stable Diffusion V1.5", "runwayml/stable-diffusion-v1-5", "", "https://huggingface.co/runwayml/stable-diffusion-v1-5"),
+    "SD V2.0": SDModel("Stable Diffusion V2.0", "stabilityai/stable-diffusion-2", "", "https://huggingface.co/stabilityai/stable-diffusion-2"),
+    "SD V2.1": SDModel("Stable Diffusion V2.1", "stabilityai/stable-diffusion-2-1", "", "https://huggingface.co/stabilityai/stable-diffusion-2-1"),
+    "SD x2 Latent Upscaler": SDModel("Stable Diffusion x2 Latent Upscaler", "stabilityai/sd-x2-latent-upscaler", "", "https://huggingface.co/stabilityai/sd-x2-latent-upscaler"),
     "Waifu Diffusion": SDModel("Waifu Diffusion", "hakurei/waifu-diffusion", "", "https://huggingface.co/hakurei/waifu-diffusion"),
 }
 
