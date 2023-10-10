@@ -68,7 +68,7 @@ def video2video(
         frame = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if not video_writer:
             video_writer = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, frame.size)
-        video_writer.write(np.array(pipe(img=frame)[0])[:, :, ::-1])
+        video_writer.write(np.array(pipe(img=frame, img_path=None, output_dir=None)[0])[:, :, ::-1])
 
     video_writer.release()
     video.release()
