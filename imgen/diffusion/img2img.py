@@ -27,7 +27,7 @@ class SDImage2Image(StableDiffusion_):
         img: Optional[Union[Image.Image, np.ndarray]] = None,
         prompt: Optional[str] = None,
         neg_prompt: Optional[str] = None,
-        n_images: int = 1,
+        n_imgs: int = 1,
         output_dir: Optional[Pathlike] = None,
         n_steps: int = 50,
         strength: float = 0.8,
@@ -39,10 +39,10 @@ class SDImage2Image(StableDiffusion_):
 
         return super().__call__(
             output_dir=output_dir,
-            image=Image.open(img_path).convert("RGB") if img_path else img,
+            image=self.open_img(img_path) if img_path else img,
             prompt=self.get_positive_prompt(prompt),
             negative_prompt=self.get_negative_prompt(neg_prompt),
-            num_images_per_prompt=n_images,
+            num_images_per_prompt=n_imgs,
             num_inference_steps=n_steps,
             strength=strength,
             guidance_scale=guidance_scale,
@@ -54,7 +54,8 @@ class SDImage2Image(StableDiffusion_):
 def video2video(
     pipe: SDImage2Image,
     video_path: Pathlike,
-    output_path: Optional[Pathlike] = None
+    output_path: Optional[Pathlike] = None,
+    **kwargs: Any,
 ) -> None:
     output_path = output_path if output_path else f"./output_{get_datetime(r'%Y%m%d', r'%H%M%S', '')}.mp4"
     video = cv2.VideoCapture(video_path)
@@ -68,7 +69,13 @@ def video2video(
         frame = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if not video_writer:
             video_writer = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, frame.size)
-        video_writer.write(np.array(pipe(img=frame, img_path=None, output_dir=None)[0])[:, :, ::-1])
+        video_writer.write(np.array(pipe(
+            img_path=None,
+            img=frame,
+            n_imgs=1,
+            output_dir=None,
+            **kwargs,
+        )[0])[:, :, ::-1])
 
     video_writer.release()
     video.release()

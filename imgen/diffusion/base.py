@@ -72,11 +72,12 @@ class StableDiffusion_(object):
                 torch_dtype=self._torch_dtype,
                 cache_dir=self._model_dir,
             )
-        if self._device == "cuda":
+        if self._device.startswith("cuda"):
             if self._compile_unet and torch.__version__ >= "2.0":
-                self._pipe.unet.to(memory_format=torch.channels_last)
+                self._pipe = self._pipe.to(self._device)
                 self._pipe.unet = torch.compile(self._pipe.unet, mode="reduce-overhead", fullgraph=True)
-            self._pipe.enable_model_cpu_offload(gpu_id=gpu_id)
+            else:
+                self._pipe.enable_model_cpu_offload(gpu_id=gpu_id)
             if isinstance(self._optimizations, list):
                 if "enable_vae_slicing" in self._optimizations:
                     self._pipe.enable_vae_slicing()
@@ -96,7 +97,7 @@ class StableDiffusion_(object):
         **kwargs: Any,
     ) -> List[Image.Image]:
         results = self.pipe(**kwargs).images
-        self.save_images(results, output_dir=output_dir)
+        self.save_imgs(results, output_dir=output_dir)
 
         return results
     
@@ -104,6 +105,10 @@ class StableDiffusion_(object):
         return torch.Generator(device=self.device).manual_seed(
             seed if seed or seed == 0 else random.randint(0, (1 << 31) - 1)
         )
+    
+    @staticmethod
+    def open_img(img_path: Pathlike) -> Image.Image:
+        return Image.open(img_path).convert("RGB")
     
     @staticmethod
     def get_final_prompt(*prompts: Optional[str]) -> str:
@@ -116,7 +121,7 @@ class StableDiffusion_(object):
         return self.get_final_prompt(self.negative_preset, prompt)
     
     @staticmethod
-    def save_images(
+    def save_imgs(
         imgs: List[Image.Image],
         output_dir: Optional[Pathlike] = None,
     ) -> None:
