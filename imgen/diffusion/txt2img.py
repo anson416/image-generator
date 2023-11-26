@@ -16,12 +16,13 @@ class SDText2Image(StableDiffusion_):
             StableDiffusionPipeline,
             **kwargs,
         )
+        self.initialize()
 
     def __call__(
         self,
         *,
         prompt: Optional[str] = None,
-        neg_prompt: Optional[str] = None,
+        negative_prompt: Optional[str] = None,
         width: Optional[int] = None,
         height: Optional[int] = None,
         n_imgs: int = 1,
@@ -34,7 +35,7 @@ class SDText2Image(StableDiffusion_):
         return super().__call__(
             output_dir=output_dir,
             prompt=self.get_positive_prompt(prompt),
-            negative_prompt=self.get_negative_prompt(neg_prompt),
+            negative_prompt=self.get_negative_prompt(negative_prompt),
             width=width,
             height=height,
             num_images_per_prompt=n_imgs,
