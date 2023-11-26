@@ -3,14 +3,14 @@
 
 from typing import Dict, Optional, Tuple
 
-from utils.types import Pathlike
+from utils.types_ import PathLike
 
 
 class SDModel(object):
     def __init__(
         self,
         name: str,
-        path: Pathlike,
+        path: PathLike,
         prefix: Optional[str] = None,
         website: Optional[str] = None,
     ) -> None:
@@ -56,6 +56,7 @@ _SD_MODELS = {
     "SD V2.1": SDModel("Stable Diffusion V2.1", "stabilityai/stable-diffusion-2-1", "", "https://huggingface.co/stabilityai/stable-diffusion-2-1"),
     "SD x2 Latent Upscaler": SDModel("Stable Diffusion x2 Latent Upscaler", "stabilityai/sd-x2-latent-upscaler", "", "https://huggingface.co/stabilityai/sd-x2-latent-upscaler"),
     "SD x4 Upscaler": SDModel("Stable Diffusion x4 Upscaler", "stabilityai/stable-diffusion-x4-upscaler", "", "https://huggingface.co/stabilityai/stable-diffusion-x4-upscaler"),
+    "SDXL Base V1.0": SDModel("Stable Diffusion XL Base V1.0", "stabilityai/stable-diffusion-xl-base-1.0", "", "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0"),
     "Waifu Diffusion": SDModel("Waifu Diffusion", "hakurei/waifu-diffusion", "", "https://huggingface.co/hakurei/waifu-diffusion"),
 }
 
