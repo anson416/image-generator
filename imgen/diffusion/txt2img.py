@@ -5,7 +5,7 @@ from typing import Any, List, Optional
 
 from diffusers import StableDiffusionPipeline
 from PIL import Image
-from utils.types import Pathlike
+from utils.types_ import PathLike
 
 from .base import StableDiffusion_
 
@@ -16,16 +16,17 @@ class SDText2Image(StableDiffusion_):
             StableDiffusionPipeline,
             **kwargs,
         )
+        self.initialize()
 
     def __call__(
         self,
         *,
         prompt: Optional[str] = None,
-        neg_prompt: Optional[str] = None,
+        negative_prompt: Optional[str] = None,
         width: Optional[int] = None,
         height: Optional[int] = None,
         n_imgs: int = 1,
-        output_dir: Optional[Pathlike] = None,
+        output_dir: Optional[PathLike] = None,
         n_steps: int = 50,
         guidance_scale: float = 7.5,
         seed: Optional[int] = None,
@@ -34,7 +35,7 @@ class SDText2Image(StableDiffusion_):
         return super().__call__(
             output_dir=output_dir,
             prompt=self.get_positive_prompt(prompt),
-            negative_prompt=self.get_negative_prompt(neg_prompt),
+            negative_prompt=self.get_negative_prompt(negative_prompt),
             width=width,
             height=height,
             num_images_per_prompt=n_imgs,
