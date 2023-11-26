@@ -8,7 +8,7 @@ import numpy as np
 from diffusers import StableDiffusionImg2ImgPipeline
 from PIL import Image
 from utils.date_time import get_datetime
-from utils.types import Pathlike
+from utils.types_ import PathLike
 
 from .base import StableDiffusion_
 
@@ -23,12 +23,12 @@ class SDImage2Image(StableDiffusion_):
     def __call__(
         self,
         *,
-        img_path: Optional[Pathlike] = None,
+        img_path: Optional[PathLike] = None,
         img: Optional[Union[Image.Image, np.ndarray]] = None,
         prompt: Optional[str] = None,
         neg_prompt: Optional[str] = None,
         n_imgs: int = 1,
-        output_dir: Optional[Pathlike] = None,
+        output_dir: Optional[PathLike] = None,
         n_steps: int = 50,
         strength: float = 0.8,
         guidance_scale: float = 7.5,
@@ -53,11 +53,11 @@ class SDImage2Image(StableDiffusion_):
 
 def video2video(
     pipe: SDImage2Image,
-    video_path: Pathlike,
-    output_path: Optional[Pathlike] = None,
+    video_path: PathLike,
+    output_path: Optional[PathLike] = None,
     **kwargs: Any,
 ) -> None:
-    output_path = output_path if output_path else f"./output_{get_datetime(r'%Y%m%d', r'%H%M%S', '')}.mp4"
+    output_path = output_path if output_path else f"./output_{get_datetime()}.mp4"
     video = cv2.VideoCapture(video_path)
     fps = video.get(cv2.cv.CV_CAP_PROP_FPS if int(cv2.__version__.split(".")[0]) < 3 else cv2.CAP_PROP_FPS)
 

@@ -5,7 +5,7 @@ from typing import Any, List, Optional
 
 from diffusers import StableDiffusionPipeline
 from PIL import Image
-from utils.types import Pathlike
+from utils.types_ import PathLike
 
 from .base import StableDiffusion_
 
@@ -25,7 +25,7 @@ class SDText2Image(StableDiffusion_):
         width: Optional[int] = None,
         height: Optional[int] = None,
         n_imgs: int = 1,
-        output_dir: Optional[Pathlike] = None,
+        output_dir: Optional[PathLike] = None,
         n_steps: int = 50,
         guidance_scale: float = 7.5,
         seed: Optional[int] = None,
