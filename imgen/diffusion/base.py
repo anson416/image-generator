@@ -3,8 +3,9 @@
 
 import os
 import random
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
+import numpy as np
 import torch
 from diffusers import DiffusionPipeline
 from PIL import Image
@@ -35,12 +36,11 @@ class StableDiffusion_(object):
         device: Optional[str] = None,
         gpu_id: int = 0,
         scheduler: Optional[SchedulerMixin] = None,
-        custom_pipeline: Optional[str] = "lpw_stable_diffusion",  # https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#long-prompt-weighting-stable-diffusion
         optimizations: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> None:
         self._pipeline = pipeline
-        self._model = model if model is not None else get_sd_model("SD V2.1")
+        self._model = model if model is not None else get_sd_model("Dreamlike Photoreal 2.0")
         self._check_nsfw = check_nsfw
         self._positive_preset = positive_preset if positive_preset is not None else self.POSITIVE_PRESET
         self._negative_preset = negative_preset if negative_preset is not None else self.NEGATIVE_PRESET
@@ -49,59 +49,59 @@ class StableDiffusion_(object):
         self._device = device.lower() if device is not None else DEVICE
         self._gpu_id = gpu_id
         self._scheduler = scheduler if scheduler is not None else get_sd_scheduler("UniPCMultistepScheduler")
-        self._custom_pipeline = custom_pipeline
         self._optimizations = optimizations
         self._torch_dtype = torch.float16 if self._device == "cuda" else torch.float32
         self._pipe = self._pipeline.from_pretrained(
             self._model.path,
             torch_dtype=self._torch_dtype,
             scheduler=self._scheduler.from_pretrained(self._model.path, subfolder="scheduler"),
-            custom_pipeline=self._custom_pipeline,
+            custom_pipeline=f"lpw_stable_diffusion{'_xl' if 'Stable Diffusion XL' in self._model.name else ''}",
             cache_dir=self._model_dir,
             **kwargs,
         )
 
+    def initialize(self) -> None:
         # Filter out NSFW images
-        if self._check_nsfw:
+        if self.check_nsfw:
             from diffusers.pipelines.stable_diffusion import \
                 StableDiffusionSafetyChecker
             from transformers import CLIPImageProcessor
 
             # Add more special prompts to further reduce the chance of generating NSFW images
-            self._positive_preset = self.combine_prompts(self._positive_preset, "(family friendly:0.85)")
-            self._negative_preset = self.combine_prompts("((nsfw))", "((nude))", self._negative_preset)
+            self.positive_preset = self.combine_prompts(self.positive_preset, "(family friendly:0.85)")
+            self.negative_preset = self.combine_prompts("((nsfw))", "((nude))", self.negative_preset)
 
-            self._pipe.safety_checker = StableDiffusionSafetyChecker.from_pretrained(
+            self.pipe.safety_checker = StableDiffusionSafetyChecker.from_pretrained(
                 "CompVis/stable-diffusion-safety-checker",
-                torch_dtype=self._torch_dtype,
-                cache_dir=self._model_dir,
+                torch_dtype=self.torch_dtype,
+                cache_dir=self.model_dir,
             )
-            self._pipe.feature_extractor = CLIPImageProcessor.from_pretrained(
+            self.pipe.feature_extractor = CLIPImageProcessor.from_pretrained(
                 "openai/clip-vit-base-patch32",
-                torch_dtype=self._torch_dtype,
-                cache_dir=self._model_dir,
+                torch_dtype=self.torch_dtype,
+                cache_dir=self.model_dir,
             )
 
         # Enable optimizations
-        if self._device.startswith("cuda"):
-            if self._compile_unet and torch.__version__ >= "2.0":
-                self._pipe = self._pipe.to(self._device)
-                self._pipe.unet = torch.compile(self._pipe.unet, mode="reduce-overhead", fullgraph=True)
+        if self.device.startswith("cuda"):
+            if self.compile_unet and torch.__version__ >= "2.0":
+                self.pipe = self.pipe.to(self.device)
+                self.pipe.unet = torch.compile(self.pipe.unet, mode="reduce-overhead", fullgraph=True)
             else:
-                self._pipe.enable_model_cpu_offload(gpu_id=gpu_id)
+                self.pipe.enable_model_cpu_offload(gpu_id=self.gpu_id)
 
-            if isinstance(self._optimizations, list):
-                if "enable_vae_slicing" in self._optimizations:
-                    self._pipe.enable_vae_slicing()
-                if "enable_vae_tiling" in self._optimizations:
-                    self._pipe.enable_vae_tiling()
+            if isinstance(self.optimizations, list):
+                if "enable_vae_slicing" in self.optimizations:
+                    self.pipe.enable_vae_slicing()
+                if "enable_vae_tiling" in self.optimizations:
+                    self.pipe.enable_vae_tiling()
 
             if torch.__version__ < "2.0":
-                self._pipe.enable_xformers_memory_efficient_attention()
+                self.pipe.enable_xformers_memory_efficient_attention()
         else:
-            self._pipe = self._pipe.to(self._device)
-            if self._device == "mps" and get_total_mem() < 64 * (1024 ** 3):  # MPS with less than 64 GB RAM
-                self._pipe.enable_attention_slicing()
+            self.pipe = self.pipe.to(self.device)
+            if self.device == "mps" and get_total_mem() < 64 * (1024 ** 3):  # MPS with less than 64 GB RAM
+                self.pipe.enable_attention_slicing()
 
     def __call__(
         self,
@@ -111,7 +111,6 @@ class StableDiffusion_(object):
     ) -> List[Image.Image]:
         results = self.pipe(**kwargs).images
         self.save_imgs(results, output_dir=output_dir)
-
         return results
     
     def get_generator(self, seed: Optional[int] = None) -> torch.Generator:
@@ -120,8 +119,12 @@ class StableDiffusion_(object):
         )
     
     @staticmethod
-    def open_img(img_path: PathLike) -> Image.Image:
-        return Image.open(img_path).convert("RGB")
+    def load_img(
+        img: Optional[Union[Image.Image, np.ndarray]] = None,
+        img_path: Optional[PathLike] = None,
+    ) -> Union[Image.Image, np.ndarray]:
+        assert img is not None or img_path is not None, "img and img_path cannot be both None"
+        return img if img is not None else Image.open(img_path).convert("RGB")
     
     @staticmethod
     def combine_prompts(*prompts: Optional[str]) -> str:
@@ -192,12 +195,12 @@ class StableDiffusion_(object):
         return self._scheduler
     
     @property
-    def custom_pipeline(self) -> str:
-        return self._custom_pipeline
-    
-    @property
     def optimizations(self) -> Optional[List[str]]:
         return self._optimizations
+    
+    @property
+    def torch_dtype(self) -> torch.dtype:
+        return self._torch_dtype
     
     @property
     def pipe(self) -> DiffusionPipeline:
