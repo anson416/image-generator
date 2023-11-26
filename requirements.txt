@@ -1,8 +1,8 @@
-accelerate
-diffusers
-invisible_watermark
-opencv-python
-safetensors
-transformers
+accelerate==0.24.1
+diffusers==0.23.1
+invisible_watermark==0.2.0
+opencv-python==4.8.1.78
+safetensors==0.4.0
+transformers==4.35.2
 utils @ git+https://github.com/anson416/python-utilities.git
-xformers
+xformers==0.0.22
