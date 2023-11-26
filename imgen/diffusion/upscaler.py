@@ -39,7 +39,7 @@ class SDx2ImageUpscaler(StableDiffusion_):
 
         return super().__call__(
             output_dir=output_dir,
-            image=self.open_img(img_path) if img_path else img,
+            image=self.load_img(img_path) if img_path else img,
             prompt=self.get_positive_prompt(prompt),
             negative_prompt=self.get_negative_prompt(neg_prompt),
             num_inference_steps=n_steps,
@@ -75,7 +75,7 @@ class SDx4ImageUpscaler(StableDiffusion_):
 
         return super().__call__(
             output_dir=output_dir,
-            image=self.open_img(img_path) if img_path else img,
+            image=self.load_img(img_path) if img_path else img,
             prompt=self.get_positive_prompt(prompt),
             negative_prompt=self.get_negative_prompt(neg_prompt),
             num_images_per_prompt=n_imgs,
