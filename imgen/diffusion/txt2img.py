@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # File: txt2img.py
 
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from diffusers import StableDiffusionPipeline
 from PIL import Image
@@ -16,7 +16,6 @@ class SDText2Image(StableDiffusion_):
             StableDiffusionPipeline,
             **kwargs,
         )
-        self.initialize()
 
     def __call__(
         self,
@@ -31,7 +30,7 @@ class SDText2Image(StableDiffusion_):
         guidance_scale: float = 7.5,
         seed: Optional[int] = None,
         **kwargs: Any,
-    ) -> List[Image.Image]:
+    ) -> list[Image.Image]:
         return super().__call__(
             output_dir=output_dir,
             prompt=self.get_positive_prompt(prompt),

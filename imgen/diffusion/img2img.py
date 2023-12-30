@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # File: img2img.py
 
-from typing import Any, List, Optional, Union
+from typing import Any, Optional
 
 import cv2
 import numpy as np
@@ -21,12 +21,11 @@ class SDImage2Image(StableDiffusion_):
             StableDiffusionImg2ImgPipeline,
             **kwargs,
         )
-        self.initialize()
     
     def __call__(
         self,
         *,
-        img: Optional[Union[Image.Image, np.ndarray]] = None,
+        img: Optional[Image.Image | np.ndarray] = None,
         img_path: Optional[PathLike] = None,
         prompt: Optional[str] = None,
         negative_prompt: Optional[str] = None,
@@ -37,10 +36,10 @@ class SDImage2Image(StableDiffusion_):
         guidance_scale: float = 7.5,
         seed: Optional[int] = None,
         **kwargs: Any,
-    ) -> List[Image.Image]:
+    ) -> list[Image.Image]:
         return super().__call__(
             output_dir=output_dir,
-            image=self.load_img(img=img, img_path=img_path),
+            image=img if img is not None else self.load_img(img_path),
             prompt=self.get_positive_prompt(prompt),
             negative_prompt=self.get_negative_prompt(negative_prompt),
             num_images_per_prompt=n_imgs,
@@ -63,12 +62,11 @@ class ControlSDImage2Image(StableDiffusion_):
             torch_dtype=self.torch_dtype,
             cache_dir=self.model_dir,
         )
-        self.initialize()
 
     def __call__(
         self,
         *,
-        img: Optional[Union[Image.Image, np.ndarray]] = None,
+        img: Optional[Image.Image | np.ndarray] = None,
         img_path: Optional[PathLike] = None,
         lower_threshold: float = 100,
         upper_threshold: float = 200,
@@ -81,9 +79,8 @@ class ControlSDImage2Image(StableDiffusion_):
         guidance_scale: float = 7.5,
         seed: Optional[int] = None,
         **kwargs: Any,
-    ) -> List[Image.Image]:
-        image = self.load_img(img=img, img_path=img_path)
-        
+    ) -> list[Image.Image]:
+        image = img if img is not None else self.load_img(img_path)
         return super().__call__(
             output_dir=output_dir,
             image=image,
@@ -104,12 +101,12 @@ class ControlSDImage2Image(StableDiffusion_):
     
     @staticmethod
     def get_canny_img(
-        img: Optional[Union[Image.Image, np.ndarray]] = None,
+        img: Optional[Image.Image | np.ndarray] = None,
         img_path: Optional[PathLike] = None,
         lower_threshold: float = 100,
         upper_threshold: float = 200,
     ) -> Image.Image:
-        canny_img = StableDiffusion_.load_img(img=img, img_path=img_path)
+        canny_img = img if img is not None else StableDiffusion_.load_img(img_path)
         canny_img = np.array(canny_img)
         canny_img = cv2.Canny(canny_img, lower_threshold, upper_threshold)[:, :, None]
         canny_img = np.concatenate([canny_img, canny_img, canny_img], axis=2)

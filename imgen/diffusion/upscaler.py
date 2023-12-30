@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # File: upscaler.py
 
-from typing import Any, List, Optional, Union
+from typing import Any, Optional
 
 import numpy as np
 from diffusers import (StableDiffusionLatentUpscalePipeline,
@@ -25,8 +25,8 @@ class SDx2ImageUpscaler(StableDiffusion_):
     def __call__(
         self,
         *,
+        img: Optional[Image.Image | np.ndarray] = None,
         img_path: Optional[PathLike] = None,
-        img: Optional[Union[Image.Image, np.ndarray]] = None,
         prompt: Optional[str] = None,
         neg_prompt: Optional[str] = None,
         output_dir: Optional[PathLike] = None,
@@ -34,12 +34,11 @@ class SDx2ImageUpscaler(StableDiffusion_):
         guidance_scale: float = 7.5,
         seed: Optional[int] = None,
         **kwargs: Any,
-    ) -> List[Image.Image]:
+    ) -> list[Image.Image]:
         assert img_path or img, "img_path and img cannot be both None"
-
         return super().__call__(
             output_dir=output_dir,
-            image=self.load_img(img_path) if img_path else img,
+            image=img if img is not None else self.load_img(img_path),
             prompt=self.get_positive_prompt(prompt),
             negative_prompt=self.get_negative_prompt(neg_prompt),
             num_inference_steps=n_steps,
@@ -61,7 +60,7 @@ class SDx4ImageUpscaler(StableDiffusion_):
         self,
         *,
         img_path: Optional[PathLike] = None,
-        img: Optional[Union[Image.Image, np.ndarray]] = None,
+        img: Optional[Image.Image | np.ndarray] = None,
         prompt: Optional[str] = None,
         neg_prompt: Optional[str] = None,
         n_imgs: int = 1,
@@ -70,12 +69,11 @@ class SDx4ImageUpscaler(StableDiffusion_):
         guidance_scale: float = 7.5,
         seed: Optional[int] = None,
         **kwargs: Any,
-    ) -> List[Image.Image]:
+    ) -> list[Image.Image]:
         assert img_path or img, "img_path and img cannot be both None"
-
         return super().__call__(
             output_dir=output_dir,
-            image=self.load_img(img_path) if img_path else img,
+            image=img if img is not None else self.load_img(img_path),
             prompt=self.get_positive_prompt(prompt),
             negative_prompt=self.get_negative_prompt(neg_prompt),
             num_images_per_prompt=n_imgs,

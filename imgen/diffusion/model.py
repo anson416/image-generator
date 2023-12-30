@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # File: model.py
 
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 from utils.types_ import PathLike
 
@@ -62,15 +62,15 @@ _SD_MODELS = {
 }
 
 
-def get_sd_models() -> Dict[str, SDModel]:
+def get_sd_models() -> dict[str, SDModel]:
     return _SD_MODELS
 
 
-def get_sd_model_names() -> Tuple[str]:
+def get_sd_model_names() -> tuple[str]:
     return tuple(_SD_MODELS.keys())
 
 
 def get_sd_model(name: str) -> SDModel:
-    if not (sd_model := _SD_MODELS.get(name, None)):
-        raise KeyError(f"Model \"{name}\" not found")
+    if (sd_model := _SD_MODELS.get(name)) is None:
+        raise KeyError(f"Model \"{name}\" not found.")
     return sd_model
