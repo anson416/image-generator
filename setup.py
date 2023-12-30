@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 # File: setup.py
 
-import os
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
+from imgen import constants
 
 NAME = "imgen"
 DESCRIPTION = "Image generation tool."
-AUTHOR = "Anson Lam"
 EMAIL = "lamyiufung2003@gmail.com"
 PYTHON_VERSION = ">=3.10.0"
 URL = "https://github.com/anson416/image-generator"
-
-with open(os.path.join(NAME, "__init__.py"), "r") as f:
-    version = [line.split("=")[-1].strip().strip("'\"")
-               for line in f.read().splitlines() if line.startswith("__version__")][0]
 
 with open("README.md", "r") as f:
     long_description = f.read()
@@ -23,11 +19,11 @@ with open("./requirements.txt", "r") as f:
 
 setup(
     name=NAME,
-    version=version,
+    version=constants.VERSION,
     description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author=AUTHOR,
+    author=constants.AUTHOR,
     author_email=EMAIL,
     python_requires=PYTHON_VERSION,
     url=URL,
