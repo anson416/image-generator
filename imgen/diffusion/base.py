@@ -3,9 +3,8 @@
 
 import os
 import random
-from typing import Any, List, Optional, Union
+from typing import Any, Optional
 
-import numpy as np
 import torch
 from diffusers import DiffusionPipeline
 from PIL import Image
@@ -20,6 +19,11 @@ from .scheduler import SchedulerMixin, get_sd_scheduler
 
 
 class StableDiffusion_(object):
+    """
+    A superclass for subclasses responsible to generate images using Stable 
+    Diffusion.
+    """
+
     POSITIVE_PRESET = "(((masterpiece))), (((best quality))), ((ultra-detailed)), ((8k))"
     NEGATIVE_PRESET = "lowres, worst quality, low quality, standard quality, error, jpeg artifacts, blurry, username, signature, watermark, text"
     
@@ -36,9 +40,52 @@ class StableDiffusion_(object):
         device: Optional[str] = None,
         gpu_id: int = 0,
         scheduler: Optional[SchedulerMixin] = None,
-        optimizations: Optional[List[str]] = None,
+        optimizations: Optional[list[str]] = None,
         **kwargs: Any,
     ) -> None:
+        """
+        Initialize an instance of `StableDiffusion_`. Should be used as a 
+        superclass.
+
+        Args:
+            pipeline (DiffusionPipeline): A pipeline extended from 
+                DiffusionPipeline, e.g. `StableDiffusionPipeline` or 
+                `StableDiffusionImg2ImgPipeline`.
+            model (Optional[SDModel], optional): Instance of `SDModel` from 
+                model.py. Can be obtained using `get_sd_model(name)` from 
+                model.py, where `name` is one of the model names from 
+                `get_sd_model_names()`. Defaults to 
+                `get_sd_model("Dreamlike Photoreal 2.0")`.
+            check_nsfw (bool, optional): Enable a safety checker to prevent 
+                NSFW (not safe for work) images. Defaults to False.
+            positive_preset (Optional[str], optional): A prompt that is put 
+                before every positive prompt. Defaults to 
+                "(((masterpiece))), (((best quality))), ((ultra-detailed)), ((8k))".
+            negative_preset (Optional[str], optional): A prompt that is put 
+                before every negative prompt. Defaults to 
+                "lowres, worst quality, low quality, standard quality, error, jpeg artifacts, blurry, username, signature, watermark, text".
+            compile_unet (bool, optional): Compile UNet for an additonal 
+                speed-up. Though, this is not suitable for all cases. Defaults 
+                to False.
+            model_dir (Optional[PathLike], optional): Directory to which 
+                downloaded models will be saved. Defaults to ~/.cache.
+            device (Optional[str], optional): Device on which Stable Diffusion 
+                will run. Defaults to "cuda" if a GPU is available otherwise 
+                "cpu".
+            gpu_id (int, optional): ID of GPU that shall be used in inference. 
+                Defaults to 0.
+            scheduler (Optional[SchedulerMixin], optional): A sampler to 
+                denoise the encoded image latents. Can be obtained using 
+                `get_sd_scheduler(name)` from scheduler.py, where `name` is one 
+                of the scheduler names from `get_sd_scheduler_names()`. 
+                Defaults to `get_sd_scheduler("UniPCMultistepScheduler")`.
+            optimizations (Optional[list[str]], optional): A list of 
+                optimization methods, e.g. "enable_vae_slicing" and 
+                "enable_vae_tiling". For more information, visit 
+                https://huggingface.co/docs/diffusers/optimization/memory. 
+                Defaults to None.
+        """
+
         self._pipeline = pipeline
         self._model = model if model is not None else get_sd_model("Dreamlike Photoreal 2.0")
         self._check_nsfw = check_nsfw
@@ -60,7 +107,13 @@ class StableDiffusion_(object):
             **kwargs,
         )
 
-    def initialize(self) -> None:
+        self._initialize()
+
+    def _initialize(self) -> None:
+        """
+        Initialize safety checker and optimizations if necessary.
+        """
+
         # Filter out NSFW images
         if self.check_nsfw:
             from diffusers.pipelines.stable_diffusion import \
@@ -89,13 +142,9 @@ class StableDiffusion_(object):
                 self.pipe.unet = torch.compile(self.pipe.unet, mode="reduce-overhead", fullgraph=True)
             else:
                 self.pipe.enable_model_cpu_offload(gpu_id=self.gpu_id)
-
             if isinstance(self.optimizations, list):
-                if "enable_vae_slicing" in self.optimizations:
-                    self.pipe.enable_vae_slicing()
-                if "enable_vae_tiling" in self.optimizations:
-                    self.pipe.enable_vae_tiling()
-
+                for opt in self.optimizations:
+                    getattr(self.pipe, opt)()
             if torch.__version__ < "2.0":
                 self.pipe.enable_xformers_memory_efficient_attention()
         else:
@@ -108,43 +157,113 @@ class StableDiffusion_(object):
         *,
         output_dir: Optional[PathLike] = None,
         **kwargs: Any,
-    ) -> List[Image.Image]:
+    ) -> list[Image.Image]:
+        """
+        Generate images using the pipeline.
+
+        Args:
+            output_dir (Optional[PathLike], optional): Directory to which 
+                generated images will be saved. None means the generated images 
+                will not be saved. Defaults to None.
+
+        Returns:
+            list[Image.Image]: List of generated images.
+        """
+
         results = self.pipe(**kwargs).images
         self.save_imgs(results, output_dir=output_dir)
         return results
     
     def get_generator(self, seed: Optional[int] = None) -> torch.Generator:
+        """
+        Return a (seeded) random number generator for PyTorch.
+
+        Args:
+            seed (Optional[int], optional): Seed for the random number 
+                generator. If None, it is automatically set to a random integer 
+                between 0 and 2147483647. Defaults to None.
+
+        Returns:
+            torch.Generator: Random number generator.
+        """
+
         return torch.Generator(device=self.device).manual_seed(
-            seed if seed is not None else random.randint(0, (1 << 31) - 1)
+            seed if seed is not None else random.randint(0, (1 << 31) - 1),
         )
     
     @staticmethod
-    def load_img(
-        img: Optional[Union[Image.Image, np.ndarray]] = None,
-        img_path: Optional[PathLike] = None,
-    ) -> Union[Image.Image, np.ndarray]:
-        assert img is not None or img_path is not None, "img and img_path cannot be both None"
-        return img if img is not None else Image.open(img_path).convert("RGB")
+    def load_img(img_path: PathLike) -> Image.Image:
+        """
+        Load an image file.
+
+        Args:
+            img_path (Optional[PathLike], optional): Path to an image file.
+
+        Returns:
+            Image.Image | np.ndarray: Loaded image.
+        """
+
+        return Image.open(img_path).convert("RGB")
     
     @staticmethod
     def combine_prompts(*prompts: Optional[str]) -> str:
+        """
+        Combine comma-separated prompts into a single prompt.
+
+        Returns:
+            str: Combined prompt.
+        """
+
         return ", ".join([p for prompt in prompts if prompt is not None and (p := prompt.strip()) != ""])
     
     def get_positive_prompt(self, prompt: str) -> str:
+        """
+        Return the final positive prompt.
+
+        Args:
+            prompt (str): Per-image positive prompt.
+
+        Returns:
+            str: Final positive prompt.
+        """
+
         return self.combine_prompts(self.model.prefix, self.positive_preset, prompt)
     
     def get_negative_prompt(self, prompt: Optional[str]) -> str:
+        """
+        Return the final negative prompt.
+
+        Args:
+            prompt (str): Per-image negative prompt.
+
+        Returns:
+            str: Final negative prompt.
+        """
+        
         return self.combine_prompts(self.negative_preset, prompt)
     
     @staticmethod
     def save_imgs(
-        imgs: List[Image.Image],
+        imgs: list[Image.Image],
         output_dir: Optional[PathLike] = None,
     ) -> None:
-        if output_dir is not None:
-            create_dir(output_dir)
-            for i, img in enumerate(imgs, start=1):
-                img.save(os.path.join(output_dir, f"output_{get_datetime()}_{i:0{len(imgs)}d}.png"))
+        """
+        Save images.
+
+        Args:
+            imgs (list[Image.Image]): List of images.
+            output_dir (Optional[PathLike], optional): Directory to which 
+                images will be saved. If None, the images will not be saved. 
+                Defaults to None.
+        """
+
+        if output_dir is None:
+            return
+        
+        create_dir(output_dir, exist_ok=True)
+        dt = get_datetime()
+        for i, img in enumerate(imgs, start=1):
+            img.save(os.path.join(output_dir, f"output_{dt}_{i:0{len(imgs)}d}.png"))
     
     @property
     def pipeline(self) -> DiffusionPipeline:
@@ -195,7 +314,7 @@ class StableDiffusion_(object):
         return self._scheduler
     
     @property
-    def optimizations(self) -> Optional[List[str]]:
+    def optimizations(self) -> Optional[list[str]]:
         return self._optimizations
     
     @property
