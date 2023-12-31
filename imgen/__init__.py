@@ -5,10 +5,9 @@
 Image generation tool.
 """
 
-import constants
 import torch
 
-__version__ = constants.VERSION
-__author__ = constants.AUTHOR
+__version__ = "0.4.2"
+__author__ = "Anson Lam"
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
