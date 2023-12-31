@@ -19,11 +19,11 @@ with open("./requirements.txt", "r") as f:
 
 setup(
     name=NAME,
-    version=constants.VERSION,
+    version="0.4.1",
     description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author=constants.AUTHOR,
+    author="Anson Lam",
     author_email=EMAIL,
     python_requires=PYTHON_VERSION,
     url=URL,
