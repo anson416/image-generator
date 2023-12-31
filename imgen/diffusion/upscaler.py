@@ -4,8 +4,6 @@
 from typing import Any, Optional
 
 import numpy as np
-from diffusers import (StableDiffusionLatentUpscalePipeline,
-                       StableDiffusionUpscalePipeline)
 from PIL import Image
 from utils.types_ import PathLike
 
@@ -15,12 +13,13 @@ from .model import get_sd_model
 
 class SDx2ImageUpscaler(StableDiffusion_):
     def __init__(self, **kwargs: Any) -> None:
+        from diffusers import StableDiffusionLatentUpscalePipeline
         super().__init__(
             StableDiffusionLatentUpscalePipeline,
             model=get_sd_model("SD x2 Latent Upscaler"),
-            check_nsfw=False,
             **kwargs,
         )
+        self.initialize()
 
     def __call__(
         self,
@@ -35,7 +34,7 @@ class SDx2ImageUpscaler(StableDiffusion_):
         seed: Optional[int] = None,
         **kwargs: Any,
     ) -> list[Image.Image]:
-        assert img_path or img, "img_path and img cannot be both None"
+        assert img is not None or img_path is not None, "`img` and `img_path` cannot be both None."
         return super().__call__(
             output_dir=output_dir,
             image=img if img is not None else self.load_img(img_path),
@@ -50,11 +49,13 @@ class SDx2ImageUpscaler(StableDiffusion_):
 
 class SDx4ImageUpscaler(StableDiffusion_):
     def __init__(self, **kwargs: Any) -> None:
+        from diffusers import StableDiffusionUpscalePipeline
         super().__init__(
             StableDiffusionUpscalePipeline,
             model=get_sd_model("SD x4 Upscaler"),
             **kwargs,
         )
+        self.initialize()
 
     def __call__(
         self,
@@ -70,7 +71,7 @@ class SDx4ImageUpscaler(StableDiffusion_):
         seed: Optional[int] = None,
         **kwargs: Any,
     ) -> list[Image.Image]:
-        assert img_path or img, "img_path and img cannot be both None"
+        assert img is not None or img_path is not None, "`img` and `img_path` cannot be both None."
         return super().__call__(
             output_dir=output_dir,
             image=img if img is not None else self.load_img(img_path),
