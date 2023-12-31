@@ -27,12 +27,6 @@ class SDText2Image(StableDiffusion_):
                 `get_sd_model("Dreamlike Photoreal 2.0")`.
             check_nsfw (bool, optional): Enable a safety checker to prevent 
                 NSFW (not safe for work) images. Defaults to False.
-            positive_preset (Optional[str], optional): A prompt that is put 
-                before every positive prompt. Defaults to 
-                "(((masterpiece))), (((best quality))), ((ultra-detailed)), ((8k))".
-            negative_preset (Optional[str], optional): A prompt that is put 
-                before every negative prompt. Defaults to 
-                "lowres, worst quality, low quality, standard quality, error, jpeg artifacts, blurry, username, signature, watermark, text".
             compile_unet (bool, optional): Compile UNet for an additonal 
                 speed-up. Though, this is not suitable for all cases. Defaults 
                 to False.
@@ -115,7 +109,7 @@ class SDText2Image(StableDiffusion_):
         return super().__call__(
             output_dir=output_dir,
             prompt=self.get_positive_prompt(prompt),
-            negative_prompt=self.get_negative_prompt(negative_prompt),
+            negative_prompt=negative_prompt,
             width=width,
             height=height,
             num_images_per_prompt=n_imgs,

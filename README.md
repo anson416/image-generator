@@ -13,3 +13,19 @@ _Note_: Use Python 3.10 or above.
    ```bash
    python -m pip install -U git+https://github.com/anson416/image-generator.git
    ```
+
+## Usage
+
+### Stable Diffusion
+
+#### Positive Prompt
+
+Suggested prefix: "(((masterpiece))), (((best quality))), ((ultra-detailed)), ((8k))"
+
+If you want to prevent NSFW content, you can add "(family friendly:0.85)" after the above prefix.
+
+#### Negative Prompt
+
+Suggested prefix: "lowres, worst quality, low quality, standard quality, error, jpeg artifacts, blurry, username, signature, watermark, text"
+
+If you want to prevent NSFW content, you can insert "((nsfw)), ((nude))" before the above prefix.

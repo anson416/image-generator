@@ -23,9 +23,6 @@ class StableDiffusion_(object):
     A superclass for subclasses responsible to generate images using Stable 
     Diffusion.
     """
-
-    POSITIVE_PRESET = "(((masterpiece))), (((best quality))), ((ultra-detailed)), ((8k))"
-    NEGATIVE_PRESET = "lowres, worst quality, low quality, standard quality, error, jpeg artifacts, blurry, username, signature, watermark, text"
     
     def __init__(
         self,
@@ -33,8 +30,6 @@ class StableDiffusion_(object):
         *,
         model: Optional[SDModel] = None,
         check_nsfw: bool = False,
-        positive_preset: Optional[str] = None,
-        negative_preset: Optional[str] = None,
         compile_unet: bool = False,
         model_dir: Optional[PathLike] = None,
         device: Optional[str] = None,
@@ -59,12 +54,6 @@ class StableDiffusion_(object):
                 `get_sd_model("Dreamlike Photoreal 2.0")`.
             check_nsfw (bool, optional): Enable a safety checker to filter out 
                 NSFW (not safe for work) images. Defaults to False.
-            positive_preset (Optional[str], optional): A prompt that is put 
-                before every positive prompt. Defaults to 
-                "(((masterpiece))), (((best quality))), ((ultra-detailed)), ((8k))".
-            negative_preset (Optional[str], optional): A prompt that is put 
-                before every negative prompt. Defaults to 
-                "lowres, worst quality, low quality, standard quality, error, jpeg artifacts, blurry, username, signature, watermark, text".
             compile_unet (bool, optional): Compile UNet for an additonal 
                 speed-up. Though, this is not suitable for all cases. Defaults 
                 to False.
@@ -93,8 +82,6 @@ class StableDiffusion_(object):
         self._pipeline = pipeline
         self._model = model if model is not None else get_sd_model("Dreamlike Photoreal 2.0")
         self._check_nsfw = check_nsfw
-        self._positive_preset = positive_preset if positive_preset is not None else self.POSITIVE_PRESET
-        self._negative_preset = negative_preset if negative_preset is not None else self.NEGATIVE_PRESET
         self._compile_unet = compile_unet
         self._model_dir = model_dir
         self._device = device.lower() if device is not None else DEVICE
@@ -123,10 +110,6 @@ class StableDiffusion_(object):
             from diffusers.pipelines.stable_diffusion import \
                 StableDiffusionSafetyChecker
             from transformers import CLIPImageProcessor
-
-            # Add more special prompts to further reduce the chance of generating NSFW images
-            self.positive_preset = self.combine_prompts(self.positive_preset, "(family friendly:0.85)")
-            self.negative_preset = self.combine_prompts("((nsfw))", "((nude))", self.negative_preset)
 
             self.pipe.safety_checker = StableDiffusionSafetyChecker.from_pretrained(
                 "CompVis/stable-diffusion-safety-checker",
@@ -234,20 +217,7 @@ class StableDiffusion_(object):
             str: Final positive prompt.
         """
 
-        return self.combine_prompts(self.model.prefix, self.positive_preset, prompt)
-    
-    def get_negative_prompt(self, prompt: Optional[str]) -> str:
-        """
-        Return the final negative prompt.
-
-        Args:
-            prompt (str): Per-image negative prompt.
-
-        Returns:
-            str: Final negative prompt.
-        """
-        
-        return self.combine_prompts(self.negative_preset, prompt)
+        return self.combine_prompts(self.model.prefix, prompt)
     
     @staticmethod
     def save_imgs(
@@ -283,22 +253,6 @@ class StableDiffusion_(object):
     @property
     def check_nsfw(self) -> bool:
         return self._check_nsfw
-    
-    @property
-    def positive_preset(self) -> str:
-        return self._positive_preset
-    
-    @positive_preset.setter
-    def positive_preset(self, preset: Optional[str]) -> None:
-        self._positive_preset = preset
-    
-    @property
-    def negative_preset(self) -> str:
-        return self._negative_preset
-    
-    @negative_preset.setter
-    def negative_preset(self, preset: Optional[str]) -> None:
-        self._negative_preset = preset
 
     @property
     def compile_unet(self) -> bool:
