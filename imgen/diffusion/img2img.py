@@ -17,7 +17,7 @@ class SDImage2Image(StableDiffusion_):
     A subclass of `StableDiffusion_`.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         """
         Initialize an instance of `SDImage2Image` for generating images from 
         text prompts.
@@ -53,7 +53,10 @@ class SDImage2Image(StableDiffusion_):
         """
 
         from diffusers import StableDiffusionImg2ImgPipeline
-        super().__init__(StableDiffusionImg2ImgPipeline)
+        super().__init__(
+            StableDiffusionImg2ImgPipeline,
+            **kwargs,
+        )
         self.initialize(
             custom_pipeline=f"lpw_stable_diffusion{'_xl' if 'Stable Diffusion XL' in self.model.name else ''}",
         )
@@ -132,7 +135,7 @@ class ControlSDImage2Image(StableDiffusion_):
     A subclass of `StableDiffusion_`.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         """
         Initialize an instance of `ControlSDImage2Image` for generating images 
         from text prompts.
@@ -169,7 +172,10 @@ class ControlSDImage2Image(StableDiffusion_):
 
         from diffusers import (ControlNetModel,
                                StableDiffusionControlNetImg2ImgPipeline)
-        super().__init__(StableDiffusionControlNetImg2ImgPipeline)
+        super().__init__(
+            StableDiffusionControlNetImg2ImgPipeline,
+            **kwargs,
+        )
         self.initialize(
             controlnet=ControlNetModel.from_pretrained(
                 "lllyasviel/sd-controlnet-canny",

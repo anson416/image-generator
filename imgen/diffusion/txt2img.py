@@ -14,7 +14,7 @@ class SDText2Image(StableDiffusion_):
     A subclass of `StableDiffusion_`.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         """
         Initialize an instance of `SDText2Image` for generating images from 
         text prompts.
@@ -50,7 +50,10 @@ class SDText2Image(StableDiffusion_):
         """
 
         from diffusers import StableDiffusionPipeline
-        super().__init__(StableDiffusionPipeline)
+        super().__init__(
+            StableDiffusionPipeline,
+            **kwargs,
+        )
         self.initialize(
             custom_pipeline=f"lpw_stable_diffusion{'_xl' if 'Stable Diffusion XL' in self.model.name else ''}",
         )
