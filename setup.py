@@ -3,7 +3,7 @@
 
 from setuptools import find_packages, setup
 
-from imgen import constants
+# from imgen import constants
 
 NAME = "imgen"
 DESCRIPTION = "Image generation tool."
