@@ -7,7 +7,7 @@ Image generation tool.
 
 import torch
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 __author__ = "Anson Lam"
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
