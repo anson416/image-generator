@@ -44,7 +44,6 @@ class SDModel(object):
 
 _SD_MODELS = {
     "Anything V4.0": SDModel("Anything V4.0", "xyn-ai/anything-v4.0", "", "https://huggingface.co/xyn-ai/anything-v4.0"),
-    "Anything V4.5": SDModel("Anything V4.5", "Airic/Anything-V4.5", "", "https://huggingface.co/Airic/Anything-V4.5"),
     "Arcane Diffusion": SDModel("Arcane Diffusion", "nitrosocke/Arcane-Diffusion", "arcane style", "https://huggingface.co/nitrosocke/Arcane-Diffusion"),
     "Dreamlike Anime 1.0": SDModel("Dreamlike Anime 1.0", "dreamlike-art/dreamlike-anime-1.0", "photo anime", "https://huggingface.co/dreamlike-art/dreamlike-anime-1.0"),
     "Dreamlike Diffusion 1.0": SDModel("Dreamlike Diffusion 1.0", "dreamlike-art/dreamlike-diffusion-1.0", "dreamlikeart", "https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0"),
