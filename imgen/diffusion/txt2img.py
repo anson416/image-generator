@@ -3,7 +3,6 @@
 
 from typing import Any, Optional
 
-from diffusers import StableDiffusionPipeline
 from PIL import Image
 from utils.types_ import PathLike
 
@@ -18,12 +17,9 @@ class SDText2Image(StableDiffusion_):
     def __init__(self, **kwargs: Any) -> None:
         """
         Initialize an instance of `SDText2Image` for generating images from 
-        text prompt.
+        text prompts.
 
         Args:
-            pipeline (DiffusionPipeline): A pipeline extended from 
-                DiffusionPipeline, e.g. `StableDiffusionPipeline` or 
-                `StableDiffusionImg2ImgPipeline`.
             model (Optional[SDModel], optional): Instance of `SDModel` from 
                 model.py. Can be obtained using `get_sd_model(name)` from 
                 model.py, where `name` is one of the model names from 
@@ -62,10 +58,12 @@ class SDText2Image(StableDiffusion_):
                 instantiating a diffusion pipeline from pretrained weights.
         """
 
+        from diffusers import StableDiffusionPipeline
         super().__init__(
             StableDiffusionPipeline,
             **kwargs,
         )
+        self.initialize()
 
     def __call__(
         self,
@@ -82,7 +80,7 @@ class SDText2Image(StableDiffusion_):
         **kwargs: Any,
     ) -> list[Image.Image]:
         """
-        Generate images from text.
+        Generate images from text prompts.
 
         Args:
             prompt (Optional[str], optional): Prompt to guide image generation. 
@@ -105,13 +103,13 @@ class SDText2Image(StableDiffusion_):
                 model to generate images closely linked to `prompt` at the 
                 expense of lower image quality. Enabled when 
                 `guidance_scale` > 1. Defaults to 7.5.
-            seed (Optional[int], optional): Seed for the random generator. If 
-                None, it is automatically set to a random integer between 0 and 
-                2147483647. Defaults to None.
+            seed (Optional[int], optional): Seed for the random generator to 
+                produce deterministic results. If None, it is automatically set 
+                to a random integer between 0 and 2147483647. Defaults to None.
 
         Returns:
             list[Image.Image]: List of generated images. Could be replaced by 
-                black images if NSFW content is found.
+                black images if `check_nsfw` is True and NSFW content is found.
         """
 
         return super().__call__(

@@ -45,7 +45,8 @@ class StableDiffusion_(object):
     ) -> None:
         """
         Initialize an instance of `StableDiffusion_`. Should be used as a 
-        superclass. A custom pipeline called "lpw_stable_diffusion" is used.
+        superclass. A custom pipeline called "lpw_stable_diffusion" is used. 
+        For more information, visit https://github.com/huggingface/diffusers/tree/main/examples/community#long-prompt-weighting-stable-diffusion.
 
         Args:
             pipeline (DiffusionPipeline): A pipeline extended from 
@@ -110,11 +111,11 @@ class StableDiffusion_(object):
             **kwargs,
         )
 
-        self._initialize()
-
-    def _initialize(self) -> None:
+    def initialize(self) -> None:
         """
-        Initialize safety checker and optimizations if necessary.
+        Initialize safety checker and optimizations if necessary. Must be 
+        called by each subclass (preferably in the `__init__()` method). This 
+        is created mainly for `ControlSDImage2Image` from img2img.py.
         """
 
         # Filter out NSFW images
@@ -185,9 +186,9 @@ class StableDiffusion_(object):
         Return a (seeded) random generator for PyTorch.
 
         Args:
-            seed (Optional[int], optional): Seed for the random generator. If 
-                None, it is automatically set to a random integer between 0 and 
-                2147483647. Defaults to None.
+            seed (Optional[int], optional): Seed for the random generator to 
+                produce deterministic results. If None, it is automatically set 
+                to a random integer between 0 and 2147483647. Defaults to None.
 
         Returns:
             torch.Generator: Random number generator.
