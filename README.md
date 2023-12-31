@@ -29,3 +29,7 @@ If you want to prevent NSFW content, you can add "(family friendly:0.85)" after 
 Suggested prefix: "lowres, worst quality, low quality, standard quality, error, jpeg artifacts, blurry, username, signature, watermark, text"
 
 If you want to prevent NSFW content, you can insert "((nsfw)), ((nude))" before the above prefix.
+
+## Materials
+
+1. [The Code of Quintessence](https://docs.qq.com/doc/DWHl3am5Zb05QbGVs)
