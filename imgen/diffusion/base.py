@@ -45,7 +45,7 @@ class StableDiffusion_(object):
     ) -> None:
         """
         Initialize an instance of `StableDiffusion_`. Should be used as a 
-        superclass.
+        superclass. A custom pipeline called "lpw_stable_diffusion" is used.
 
         Args:
             pipeline (DiffusionPipeline): A pipeline extended from 
@@ -56,7 +56,7 @@ class StableDiffusion_(object):
                 model.py, where `name` is one of the model names from 
                 `get_sd_model_names()`. Defaults to 
                 `get_sd_model("Dreamlike Photoreal 2.0")`.
-            check_nsfw (bool, optional): Enable a safety checker to prevent 
+            check_nsfw (bool, optional): Enable a safety checker to filter out 
                 NSFW (not safe for work) images. Defaults to False.
             positive_preset (Optional[str], optional): A prompt that is put 
                 before every positive prompt. Defaults to 
@@ -84,6 +84,9 @@ class StableDiffusion_(object):
                 "enable_vae_tiling". For more information, visit 
                 https://huggingface.co/docs/diffusers/optimization/memory. 
                 Defaults to None.
+            **kwargs (Any, optional): Keyword arguments (except `torch_dtype`, 
+                `scheduler`, `custom_pipeline`, and `cache_dir`) for 
+                instantiating a diffusion pipeline from pretrained weights.
         """
 
         self._pipeline = pipeline
@@ -159,15 +162,18 @@ class StableDiffusion_(object):
         **kwargs: Any,
     ) -> list[Image.Image]:
         """
-        Generate images using the pipeline.
+        Generate images using the diffusion pipeline.
 
         Args:
             output_dir (Optional[PathLike], optional): Directory to which 
                 generated images will be saved. None means the generated images 
                 will not be saved. Defaults to None.
+            **kwargs (Any, optional): Keyword-only arguments passed to the 
+                diffusion pipeline.
 
         Returns:
-            list[Image.Image]: List of generated images.
+            list[Image.Image]: List of generated images. Could be replaced by 
+                black images if NSFW content is found.
         """
 
         results = self.pipe(**kwargs).images
@@ -176,12 +182,12 @@ class StableDiffusion_(object):
     
     def get_generator(self, seed: Optional[int] = None) -> torch.Generator:
         """
-        Return a (seeded) random number generator for PyTorch.
+        Return a (seeded) random generator for PyTorch.
 
         Args:
-            seed (Optional[int], optional): Seed for the random number 
-                generator. If None, it is automatically set to a random integer 
-                between 0 and 2147483647. Defaults to None.
+            seed (Optional[int], optional): Seed for the random generator. If 
+                None, it is automatically set to a random integer between 0 and 
+                2147483647. Defaults to None.
 
         Returns:
             torch.Generator: Random number generator.
@@ -200,7 +206,7 @@ class StableDiffusion_(object):
             img_path (Optional[PathLike], optional): Path to an image file.
 
         Returns:
-            Image.Image | np.ndarray: Loaded image.
+            Image.Image: Loaded image.
         """
 
         return Image.open(img_path).convert("RGB")
