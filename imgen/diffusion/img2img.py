@@ -50,9 +50,6 @@ class SDImage2Image(StableDiffusion_):
                 "enable_vae_tiling". For more information, visit 
                 https://huggingface.co/docs/diffusers/optimization/memory. 
                 Defaults to None.
-            **kwargs (Any, optional): Keyword arguments (except `torch_dtype`, 
-                `scheduler`, `custom_pipeline`, and `cache_dir`) for 
-                instantiating a diffusion pipeline from pretrained weights.
         """
 
         from diffusers import StableDiffusionImg2ImgPipeline
@@ -60,7 +57,9 @@ class SDImage2Image(StableDiffusion_):
             StableDiffusionImg2ImgPipeline,
             **kwargs,
         )
-        self.initialize()
+        self.initialize(
+            custom_pipeline=f"lpw_stable_diffusion{'_xl' if 'Stable Diffusion XL' in self.model.name else ''}",
+        )
     
     def __call__(
         self,
@@ -138,8 +137,8 @@ class ControlSDImage2Image(StableDiffusion_):
 
     def __init__(self, **kwargs: Any) -> None:
         """
-        Initialize an instance of `ControlSDImage2Image` for generating images from 
-        text prompts.
+        Initialize an instance of `ControlSDImage2Image` for generating images 
+        from text prompts.
 
         Args:
             model (Optional[SDModel], optional): Instance of `SDModel` from 
@@ -169,9 +168,6 @@ class ControlSDImage2Image(StableDiffusion_):
                 "enable_vae_tiling". For more information, visit 
                 https://huggingface.co/docs/diffusers/optimization/memory. 
                 Defaults to None.
-            **kwargs (Any, optional): Keyword arguments (except `torch_dtype`, 
-                `scheduler`, `custom_pipeline`, and `cache_dir`) for 
-                instantiating a diffusion pipeline from pretrained weights.
         """
 
         from diffusers import (ControlNetModel,
@@ -180,12 +176,13 @@ class ControlSDImage2Image(StableDiffusion_):
             StableDiffusionControlNetImg2ImgPipeline,
             **kwargs,
         )
-        self.pipe.controlnet = ControlNetModel.from_pretrained(
-            "lllyasviel/sd-controlnet-canny",
-            torch_dtype=self.torch_dtype,
-            cache_dir=self.model_dir,
+        self.initialize(
+            controlnet=ControlNetModel.from_pretrained(
+                "lllyasviel/sd-controlnet-canny",
+                torch_dtype=self.torch_dtype,
+                cache_dir=self.model_dir,
+            ),
         )
-        self.initialize()
 
     def __call__(
         self,

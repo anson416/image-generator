@@ -47,9 +47,6 @@ class SDText2Image(StableDiffusion_):
                 "enable_vae_tiling". For more information, visit 
                 https://huggingface.co/docs/diffusers/optimization/memory. 
                 Defaults to None.
-            **kwargs (Any, optional): Keyword arguments (except `torch_dtype`, 
-                `scheduler`, `custom_pipeline`, and `cache_dir`) for 
-                instantiating a diffusion pipeline from pretrained weights.
         """
 
         from diffusers import StableDiffusionPipeline
@@ -57,7 +54,9 @@ class SDText2Image(StableDiffusion_):
             StableDiffusionPipeline,
             **kwargs,
         )
-        self.initialize()
+        self.initialize(
+            custom_pipeline=f"lpw_stable_diffusion{'_xl' if 'Stable Diffusion XL' in self.model.name else ''}",
+        )
 
     def __call__(
         self,

@@ -36,7 +36,6 @@ class StableDiffusion_(object):
         gpu_id: int = 0,
         scheduler: Optional[SchedulerMixin] = None,
         optimizations: Optional[list[str]] = None,
-        **kwargs: Any,
     ) -> None:
         """
         Initialize an instance of `StableDiffusion_`. Should be used as a 
@@ -74,9 +73,6 @@ class StableDiffusion_(object):
                 "enable_vae_tiling". For more information, visit 
                 https://huggingface.co/docs/diffusers/optimization/memory. 
                 Defaults to None.
-            **kwargs (Any, optional): Keyword arguments (except `torch_dtype`, 
-                `scheduler`, `custom_pipeline`, and `cache_dir`) for 
-                instantiating a diffusion pipeline from pretrained weights.
         """
 
         self._pipeline = pipeline
@@ -89,21 +85,26 @@ class StableDiffusion_(object):
         self._scheduler = scheduler if scheduler is not None else get_sd_scheduler("UniPCMultistepScheduler")
         self._optimizations = optimizations
         self._torch_dtype = torch.float16 if self._device == "cuda" else torch.float32
-        self._pipe = self._pipeline.from_pretrained(
-            self._model.path,
-            torch_dtype=self._torch_dtype,
-            scheduler=self._scheduler.from_pretrained(self._model.path, subfolder="scheduler"),
-            custom_pipeline=f"lpw_stable_diffusion{'_xl' if 'Stable Diffusion XL' in self._model.name else ''}",
-            cache_dir=self._model_dir,
+        self._pipe: DiffusionPipeline = None
+
+    def initialize(self, **kwargs: Any) -> None:
+        """
+        Initialize diffusion pipeline, safety checker and optimizations if necessary. Must be 
+        called by each subclass (preferably in the `__init__()` method).
+
+        Args:
+            **kwargs (Any, optional): Keyword arguments (except `torch_dtype`, 
+                `scheduler`, and `cache_dir`) for instantiating a diffusion 
+                pipeline from pretrained weights.
+        """
+
+        self.pipe = self.pipeline.from_pretrained(
+            self.model.path,
+            torch_dtype=self.torch_dtype,
+            scheduler=self.scheduler.from_pretrained(self.model.path, subfolder="scheduler"),
+            cache_dir=self.model_dir,
             **kwargs,
         )
-
-    def initialize(self) -> None:
-        """
-        Initialize safety checker and optimizations if necessary. Must be 
-        called by each subclass (preferably in the `__init__()` method). This 
-        is created mainly for `ControlSDImage2Image` from img2img.py.
-        """
 
         # Filter out NSFW images
         if self.check_nsfw:
@@ -123,9 +124,9 @@ class StableDiffusion_(object):
             )
 
         # Enable optimizations
+        self.pipe = self.pipe.to(self.device)
         if self.device.startswith("cuda"):
             if self.compile_unet and torch.__version__ >= "2.0":
-                self.pipe = self.pipe.to(self.device)
                 self.pipe.unet = torch.compile(self.pipe.unet, mode="reduce-overhead", fullgraph=True)
             else:
                 self.pipe.enable_model_cpu_offload(gpu_id=self.gpu_id)
@@ -135,7 +136,6 @@ class StableDiffusion_(object):
             if torch.__version__ < "2.0":
                 self.pipe.enable_xformers_memory_efficient_attention()
         else:
-            self.pipe = self.pipe.to(self.device)
             if self.device == "mps" and get_total_mem() < 64 * (1024 ** 3):  # MPS with less than 64 GB RAM
                 self.pipe.enable_attention_slicing()
 
@@ -285,3 +285,7 @@ class StableDiffusion_(object):
     @property
     def pipe(self) -> DiffusionPipeline:
         return self._pipe
+    
+    @pipe.setter
+    def pipe(self, value: DiffusionPipeline) -> None:
+        self._pipe = value
