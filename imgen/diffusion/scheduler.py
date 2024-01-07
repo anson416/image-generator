@@ -3,8 +3,13 @@
 
 from typing import Tuple
 
-from diffusers import (DPMSolverMultistepScheduler, EulerDiscreteScheduler,
-                       PNDMScheduler, SchedulerMixin, UniPCMultistepScheduler)
+from diffusers import (
+    DPMSolverMultistepScheduler,
+    EulerDiscreteScheduler,
+    PNDMScheduler,
+    SchedulerMixin,
+    UniPCMultistepScheduler,
+)
 
 _SD_SCHEDULERS = {
     "DPMSolverMultistepScheduler": DPMSolverMultistepScheduler,
@@ -20,5 +25,5 @@ def get_sd_scheduler_names() -> Tuple[str]:
 
 def get_sd_scheduler(name: str) -> SchedulerMixin:
     if not (sd_scheduler := _SD_SCHEDULERS.get(name, None)):
-        raise KeyError(f"Scheduler \"{name}\" not found")
+        raise KeyError(f'Scheduler "{name}" not found')
     return sd_scheduler
