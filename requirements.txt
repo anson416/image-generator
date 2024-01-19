@@ -1,0 +1,8 @@
+accelerate
+diffusers
+invisible_watermark
+opencv-python
+safetensors
+transformers
+utils @ git+https://github.com/anson416/python-utilities.git
+xformers
